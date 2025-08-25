@@ -20,12 +20,14 @@ __HELP__ = """
 </blockquote>
 """
 
+from pyrogram.enums import ChatType
+
 async def cekid_handler(client, message):
     user = message.from_user
     chat = message.chat
 
     # ========== Private Chat (user ↔ user) ==========
-    if chat.type == "private":
+    if chat.type in [ChatType.PRIVATE, ChatType.BOT]:
         if message.reply_to_message and message.reply_to_message.from_user:
             replied = message.reply_to_message
             replied_user = replied.from_user
@@ -41,14 +43,8 @@ Replied Message Information:
 Your ID: <code>{user.id}</code>
 Chat ID: <code>{chat.id}</code>"""
 
-    # ========== Bot Chat (user ↔ bot) ==========
-    elif chat.type == "bot":
-        text = f"""Message ID: <code>{message.id}</code>
-Your ID: <code>{user.id}</code>
-Bot Chat ID: <code>{chat.id}</code>"""
-
     # ========== Group / Supergroup ==========
-    elif chat.type in ["group", "supergroup"]:
+    elif chat.type in [ChatType.GROUP, ChatType.SUPERGROUP]:
         chat_title = chat.title or "Group"
         username_text = f"@{user.username}" if user.username else "Tidak ada"
         digit_info = f"({len(str(user.id))} digit)"
@@ -68,7 +64,7 @@ Replied Message Information:
 ├ User ID: <code>{replied_user.id}</code>"""
 
     # ========== Channel ==========
-    elif chat.type == "channel":
+    elif chat.type == ChatType.CHANNEL:
         chat_title = chat.title or "Channel"
         text = f"""✉️ Msg ID: <code>{message.id}</code>
 💬 Chat ID: <code>{chat.id}</code> ({chat_title})"""
