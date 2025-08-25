@@ -169,22 +169,18 @@ async def _(client, message):
         return await msg.edit(f"<b><i>😐 Delay per grup diatur ke {val} detik.</i></b>")
 
     elif cmd == "save":
-        if not message.reply_to_message:
-            return await msg.edit("<b><i>⛔ Harap reply ke pesan yang ingin disimpan.</i></b>")
+    if not message.reply_to_message:
+        return await msg.edit("<b><i>⛔ Harap reply ke pesan yang ingin disimpan.</i></b>")
 
-        # Forward pesan ke "Saved Messages"
-        saved_msg = await message.reply_to_message.forward("me")
+    saved_msg = await message.reply_to_message.forward("me")
 
-        # Hapus semua pesan lama biar cuma 1 yg tersisa
-        await clear_auto_text(client.me.id)
+    # Langsung replace AUTO_TEXTS biar cuma 1 id yg disimpan
+    await set_vars(client.me.id, "AUTO_TEXTS", json.dumps([saved_msg.id]))
 
-        # Simpan pesan baru (mode forward)
-        await add_auto_text(client.me.id, saved_msg.id)
-
-        return await msg.edit(
-            f"<b><i>✅ Pesan baru disimpan dengan ID <code>{saved_msg.id}</code> "
-            f"(mode forward, pesan lama terhapus)</i></b>"
-        )
+    return await msg.edit(
+        f"<b><i>✅ Pesan baru disimpan dengan ID <code>{saved_msg.id}</code> "
+        f"(mode forward, pesan lama terhapus)</i></b>"
+    )
 
     elif cmd == "list":
         auto_texts = await get_auto_text(client.me.id)
