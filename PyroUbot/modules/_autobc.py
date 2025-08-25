@@ -116,16 +116,18 @@ async def _(client, message):
         return await msg.edit("<b><i>⛔ Auto Broadcast dihentikan.</i></b>")
 
     elif cmd == "status":
-        status = "✅ Enabled" if AG.get(client.me.id, {}).get("status") else "⛔ Disabled"
-        delay_minutes = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)
-        per_group_delay = int(await get_vars(client.me.id, "PER_GROUP_DELAY") or 3)
-        auto_texts = await get_auto_text(client.me.id)
-        total_round = AG.get(client.me.id, {}).get("round", 0)
-        last_bc = fmt_wib(AG.get(client.me.id, {}).get("last"))
-        next_bc = fmt_wib(AG.get(client.me.id, {}).get("next"))
+    status = "✅ Enabled" if AG.get(client.me.id, {}).get("status") else "⛔ Disabled"
+    delay_minutes = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)
+    per_group_delay = int(await get_vars(client.me.id, "PER_GROUP_DELAY") or 3)
+    auto_texts = await get_auto_text(client.me.id)
+    total_round = AG.get(client.me.id, {}).get("round", 0)
+    last_bc = fmt_wib(AG.get(client.me.id, {}).get("last"))
+    next_bc = fmt_wib(AG.get(client.me.id, {}).get("next"))
 
-        teks = f"""
+    teks = f"""
 📎 <b>Auto Broadcast Status</b>:
+
+<details><summary>📊 Klik untuk lihat status</summary>
 
 👤 Status: {status}
 🏓 Pause Rotation: {delay_minutes} Min
@@ -133,8 +135,11 @@ async def _(client, message):
 ⚙️ Total Rounds: {total_round} Times
 ⏰ Last Broadcast: {last_bc}
 ⚡️ Next Broadcast: {next_bc}
+
+</details>
 """
-        return await msg.edit(teks)
+
+    return await msg.edit(teks, disable_web_page_preview=True)
 
     elif cmd == "delay":
         if not value.isdigit():
