@@ -6,18 +6,14 @@ from pyrogram.errors import FloodWait
 from PyroUbot import *
 
 AG = {}  # per userbot id: {"status": bool, "round": int, "last": datetime, "next": datetime}
-BLACKLIST_CHAT = []  # default kosong, tambahin ID grup kalau mau exclude
-
 
 def now_wib():
     return datetime.utcnow() + timedelta(hours=7)  # UTC+7
-
 
 def fmt_wib(dt: datetime | None):
     if not dt:
         return "-"
     return dt.strftime("%Y-%m-%d %H:%M:%S WIB")
-
 
 def parse_autobc_args(message):
     text = (message.text or message.caption or "").strip()
@@ -27,7 +23,6 @@ def parse_autobc_args(message):
     cmd = parts[1].lower()
     val = parts[2] if len(parts) > 2 else ""
     return (cmd, val)
-
 
 # ======================
 # Core AutoBC
@@ -96,7 +91,6 @@ async def run_autobc(client):
 
         await asyncio.sleep(60 * delay_minutes)
 
-
 # ======================
 # Commands
 # ======================
@@ -133,18 +127,14 @@ async def _(client, message):
         teks = f"""
 📎 <b>Auto Broadcast Status</b>:
 
-<details><summary>📊 Klik untuk lihat status</summary>
-
 👤 Status: {status}
 🏓 Pause Rotation: {delay_minutes} Min
 ✉️ Save Messages: {len(auto_texts) if auto_texts else 0}
 ⚙️ Total Rounds: {total_round} Times
 ⏰ Last Broadcast: {last_bc}
 ⚡️ Next Broadcast: {next_bc}
-
-</details>
 """
-        return await msg.edit(teks, disable_web_page_preview=True)
+        return await msg.edit(teks)
 
     elif cmd == "delay":
         if not value.isdigit():
@@ -189,8 +179,7 @@ async def _(client, message):
         return await msg.edit(f"<b><i>⚙️ Pesan dengan ID <code>{removed}</code> berhasil dihapus.</i></b>")
 
     else:
-        return await msg.edit("<b><i>⛔ Format salah! Gunakan .autobc [query] - [value]</i></b>")
-
+        return await msg.edit(f"<b><i>{stopb} Format salah! Gunakan .autobc [query] - [value]</i></b>")
 
 # ======================
 # Auto Resume on start
@@ -219,7 +208,6 @@ async def resume_autobc(client):
 """
         )
         asyncio.create_task(run_autobc(client))
-
 
 @PY.UBOT("start")
 async def start_handler(client, message):
