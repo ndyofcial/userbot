@@ -11,7 +11,7 @@ from PyroUbot import *
 AG = {}  # per userbot id: {"status": bool, "round": int}
 
 # ======================
-# Emoji helper (optional)
+# Emoji helper
 # ======================
 def emoji(alias):
     emojis = {
@@ -51,28 +51,14 @@ put    = emoji("PUTAR")
 # Utils
 # ======================
 def now_wib():
-    # WIB = UTC+7 tanpa ketergantungan zoneinfo
-    return datetime.utcnow() + timedelta(hours=7)
+    return datetime.utcnow() + timedelta(hours=7)  # UTC+7
 
 def fmt_wib(dt: datetime):
-    # dd-mm-yy HH:MM:SS (sesuai permintaan “16-26-23” = dd-mm-yy)
     return dt.strftime("%d-%m-%y %H:%M:%S")
 
 def parse_autobc_args(message):
-    """
-    Parsir perintah .autobc
-    Bentuk yang didukung:
-      .autobc on
-      .autobc off
-      .autobc delay 60
-      .autobc perdelay 3
-      .autobc text  (reply ke pesan)
-      .autobc list
-      .autobc remove 2
-    """
     text = (message.text or message.caption or "").strip()
     parts = text.split()
-    # parts[0] = .autobc (atau prefix lain), parts[1:] = argumen
     if len(parts) < 2:
         return ("help", "")
     cmd = parts[1].lower()
@@ -87,8 +73,8 @@ async def run_autobc(client):
     AG[client.me.id] = {"status": True, "round": AG.get(client.me.id, {}).get("round", 0)}
 
     while AG[client.me.id]["status"]:
-        delay_minutes = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)  # menit antar putaran
-        per_group_delay = int(await get_vars(client.me.id, "PER_GROUP_DELAY") or 3)  # detik antar grup
+        delay_minutes = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)
+        per_group_delay = int(await get_vars(client.me.id, "PER_GROUP_DELAY") or 3)
 
         blacklist = await get_list_from_vars(client.me.id, "BL_ID")
         auto_texts = await get_auto_text(client.me.id)
@@ -99,7 +85,6 @@ async def run_autobc(client):
             await set_vars(client.me.id, "AUTOBCAST", "off")
             return
 
-        # pilih 1 pesan acak dari daftar ID tersimpan (disimpan di Saved Messages)
         message_to_forward = random.choice(auto_texts)
         group_success, failed = 0, 0
         AG[client.me.id]["round"] = AG[client.me.id].get("round", 0) + 1
@@ -120,14 +105,12 @@ async def run_autobc(client):
                     group_success += 1
                 except FloodWait as e:
                     await asyncio.sleep(e.value)
-                except Exception as err:
+                except Exception:
                     failed += 1
-                    # log error forward
-                    await client.send_message(client.me.id, f"❌ Gagal forward ke {dialog.chat.id}\nError: {err}")
+                    # cukup hitung gagal tanpa notif spam
 
-                await asyncio.sleep(per_group_delay)  # jeda antar grup biar aman
+                await asyncio.sleep(per_group_delay)
 
-        # Hitung jadwal berikutnya (WIB)
         next_run = now_wib() + timedelta(minutes=delay_minutes)
         next_str = fmt_wib(next_run)
 
@@ -158,7 +141,6 @@ async def _(client, message):
         if AG.get(client.me.id, {}).get("status"):
             return await msg.edit(f"<b><i>{saktf} Auto Broadcast sudah aktif.</i></b>")
 
-        # set default delay kalau belum ada
         if not await get_vars(client.me.id, "DELAY_GCAST"):
             await set_vars(client.me.id, "DELAY_GCAST", "60")
         if not await get_vars(client.me.id, "PER_GROUP_DELAY"):
@@ -183,7 +165,7 @@ async def _(client, message):
         if not value.isdigit():
             return await msg.edit(f"<b><i>{stopb} Format salah! Gunakan <code>.autobc perdelay [detik]</code></i></b>")
         val = int(value)
-        if val < 3:  # minimal 3 detik biar aman
+        if val < 3:
             return await msg.edit(f"<b><i>{stopb} Minimal delay per grup adalah 3 detik.</i></b>")
         await set_vars(client.me.id, "PER_GROUP_DELAY", str(val))
         return await msg.edit(f"<b><i>{delayy} Delay per grup diatur ke {val} detik.</i></b>")
@@ -204,7 +186,7 @@ async def _(client, message):
 
     elif cmd == "remove":
         if not value.isdigit():
-            return await msg.edit(f"<b><i>{stopb} Harap masukkan nomor urut yang valid. Contoh: <code>.autobc remove 2</code></i></b>")
+            return await msg.edit(f"<b><i>{stopb} Harap masukkan nomor urut yang valid.</i></b>")
         idx = int(value) - 1
         auto_texts = await get_auto_text(client.me.id)
         if not auto_texts:
@@ -233,7 +215,6 @@ async def _(client, message):
 # Auto Resume on start
 # ======================
 async def resume_autobc(client):
-    """Dipanggil otomatis pas start ubot"""
     status = await get_vars(client.me.id, "AUTOBCAST")
     if status == "on":
         delay_minutes = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)
