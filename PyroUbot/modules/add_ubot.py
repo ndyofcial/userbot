@@ -16,7 +16,7 @@ from PyroUbot import *
 async def _(client, message):
     buttons = BTN.START(message)
     msg = MSG.START(message)
-    await message.reply_photo("https://files.catbox.moe/ctx437.jpg", caption=msg, reply_markup=InlineKeyboardMarkup(buttons))
+    await message.reply_video("https://files.catbox.moe/axrb4w.mp4", caption=msg, reply_markup=InlineKeyboardMarkup(buttons))
 
 
 @PY.CALLBACK("bahan")
@@ -312,8 +312,11 @@ async def _(client, callback_query):
     await bash("rm -rf *session*")
     await install_my_peer(new_client)
     try:
-        await new_client.join_chat("moire_marketx")
-        await new_client.join_chat("moire_room")
+        await new_client.join_chat("rompublicvin2")
+        await new_client.join_chat("averixnotif")
+        await new_client.join_chat("ndytestimoni3")
+        await new_client.join_chat("roomndy1")
+        await new_client.join_chat("roomndy2")
     except UserAlreadyParticipant:
         pass
 
