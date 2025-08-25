@@ -30,13 +30,6 @@ def parse_autobc_args(message):
 
 
 # ======================
-# Helper untuk Auto Text
-# ======================
-async def clear_auto_text(user_id):
-    await set_vars(user_id, "AUTO_TEXTS", "[]")
-
-
-# ======================
 # Core AutoBC
 # ======================
 async def run_autobc(client):
@@ -169,18 +162,19 @@ async def _(client, message):
         return await msg.edit(f"<b><i>😐 Delay per grup diatur ke {val} detik.</i></b>")
 
     elif cmd == "save":
-    if not message.reply_to_message:
-        return await msg.edit("<b><i>⛔ Harap reply ke pesan yang ingin disimpan.</i></b>")
+        if not message.reply_to_message:
+            return await msg.edit("<b><i>⛔ Harap reply ke pesan yang ingin disimpan.</i></b>")
 
-    saved_msg = await message.reply_to_message.forward("me")
+        # Forward pesan ke "Saved Messages"
+        saved_msg = await message.reply_to_message.forward("me")
 
-    # Langsung replace AUTO_TEXTS biar cuma 1 id yg disimpan
-    await set_vars(client.me.id, "AUTO_TEXTS", json.dumps([saved_msg.id]))
+        # ✅ Overwrite (hanya simpan 1 pesan, tidak bisa dobel)
+        await set_vars(client.me.id, "AUTO_TEXTS", f"[{saved_msg.id}]")
 
-    return await msg.edit(
-        f"<b><i>✅ Pesan baru disimpan dengan ID <code>{saved_msg.id}</code> "
-        f"(mode forward, pesan lama terhapus)</i></b>"
-    )
+        return await msg.edit(
+            f"<b><i>✅ Pesan baru disimpan dengan ID <code>{saved_msg.id}</code> "
+            f"(pesan lama dihapus, hanya 1 tersisa)</i></b>"
+        )
 
     elif cmd == "list":
         auto_texts = await get_auto_text(client.me.id)
