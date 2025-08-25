@@ -7,13 +7,16 @@ from PyroUbot import *
 
 AG = {}  # per userbot id: {"status": bool, "round": int, "last": datetime, "next": datetime}
 
+
 def now_wib():
     return datetime.utcnow() + timedelta(hours=7)  # UTC+7
+
 
 def fmt_wib(dt: datetime | None):
     if not dt:
         return "-"
     return dt.strftime("%Y-%m-%d %H:%M:%S WIB")
+
 
 def parse_autobc_args(message):
     text = (message.text or message.caption or "").strip()
@@ -23,6 +26,7 @@ def parse_autobc_args(message):
     cmd = parts[1].lower()
     val = parts[2] if len(parts) > 2 else ""
     return (cmd, val)
+
 
 # ======================
 # Core AutoBC
@@ -91,6 +95,7 @@ async def run_autobc(client):
 
         await asyncio.sleep(60 * delay_minutes)
 
+
 # ======================
 # Commands
 # ======================
@@ -116,15 +121,15 @@ async def _(client, message):
         return await msg.edit("<b><i>⛔ Auto Broadcast dihentikan.</i></b>")
 
     elif cmd == "status":
-    status = "✅ Enabled" if AG.get(client.me.id, {}).get("status") else "⛔ Disabled"
-    delay_minutes = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)
-    per_group_delay = int(await get_vars(client.me.id, "PER_GROUP_DELAY") or 3)
-    auto_texts = await get_auto_text(client.me.id)
-    total_round = AG.get(client.me.id, {}).get("round", 0)
-    last_bc = fmt_wib(AG.get(client.me.id, {}).get("last"))
-    next_bc = fmt_wib(AG.get(client.me.id, {}).get("next"))
+        status = "✅ Enabled" if AG.get(client.me.id, {}).get("status") else "⛔ Disabled"
+        delay_minutes = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)
+        per_group_delay = int(await get_vars(client.me.id, "PER_GROUP_DELAY") or 3)
+        auto_texts = await get_auto_text(client.me.id)
+        total_round = AG.get(client.me.id, {}).get("round", 0)
+        last_bc = fmt_wib(AG.get(client.me.id, {}).get("last"))
+        next_bc = fmt_wib(AG.get(client.me.id, {}).get("next"))
 
-    teks = f"""
+        teks = f"""
 📎 <b>Auto Broadcast Status</b>:
 
 <details><summary>📊 Klik untuk lihat status</summary>
@@ -138,8 +143,7 @@ async def _(client, message):
 
 </details>
 """
-
-    return await msg.edit(teks, disable_web_page_preview=True)
+        return await msg.edit(teks, disable_web_page_preview=True)
 
     elif cmd == "delay":
         if not value.isdigit():
@@ -186,6 +190,7 @@ async def _(client, message):
     else:
         return await msg.edit(f"<b><i>{stopb} Format salah! Gunakan .autobc [query] - [value]</i></b>")
 
+
 # ======================
 # Auto Resume on start
 # ======================
@@ -213,6 +218,7 @@ async def resume_autobc(client):
 """
         )
         asyncio.create_task(run_autobc(client))
+
 
 @PY.UBOT("start")
 async def start_handler(client, message):
