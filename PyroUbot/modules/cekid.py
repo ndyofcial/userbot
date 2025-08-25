@@ -24,7 +24,7 @@ async def cekid_handler(client, message):
     user = message.from_user
     chat = message.chat
 
-    # ========== Private Chat ==========
+    # ========== Private Chat (user ↔ user) ==========
     if chat.type == "private":
         if message.reply_to_message and message.reply_to_message.from_user:
             replied = message.reply_to_message
@@ -41,6 +41,12 @@ Replied Message Information:
 Your ID: <code>{user.id}</code>
 Chat ID: <code>{chat.id}</code>"""
 
+    # ========== Bot Chat (user ↔ bot) ==========
+    elif chat.type == "bot":
+        text = f"""Message ID: <code>{message.id}</code>
+Your ID: <code>{user.id}</code>
+Bot Chat ID: <code>{chat.id}</code>"""
+
     # ========== Group / Supergroup ==========
     elif chat.type in ["group", "supergroup"]:
         chat_title = chat.title or "Group"
@@ -52,7 +58,6 @@ Chat ID: <code>{chat.id}</code>"""
 🆔 User ID: <code>{user.id}</code> {digit_info}
 💬 Chat ID: <code>{chat.id}</code> ({chat_title})"""
 
-        # kalau reply di grup
         if message.reply_to_message and message.reply_to_message.from_user:
             replied = message.reply_to_message
             replied_user = replied.from_user
