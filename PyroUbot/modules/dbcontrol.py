@@ -268,8 +268,76 @@ async def _(client, message):
         return await Sh.edit(response)
     else:
         return await Sh.edit("tidak dapat mengambil daftar seller")
-        
-        
+
+
+@PY.BOT("time")
+@PY.OWNER
+async def _(client, message):
+    Tm = await message.reply("processing . . .")
+    bajingan = message.command
+    if len(bajingan) != 3:
+        return await Tm.edit(f"woi bang ! \n🗿mohon gunakan /set_time user_id hari")
+    user_id = int(bajingan[1])
+    get_day = int(bajingan[2])
+    print(user_id , get_day)
+    try:
+        get_id = (await client.get_users(user_id)).id
+        user = await client.get_users(user_id)
+    except Exception as error:
+        return await Tm.edit(error)
+    if not get_day:
+        get_day = 30
+    now = datetime.now(timezone("Asia/Jakarta"))
+    expire_date = now + timedelta(days=int(get_day))
+    await set_expired_date(user_id, expire_date)
+    await Tm.edit(f"""
+ ⎆ ɪɴғᴏʀᴍᴀᴛɪᴏɴ :
+ ⎆ name: {user.mention}
+ ⎆ id: {get_id}
+ ⎆ aktifkan_selama: {get_day} hari
+"""
+    )
+
+
+@PY.BOT("cek")
+@PY.SELLER
+async def _(client, message):
+    Sh = await message.reply("processing . . .")
+    user_id = await extract_user(message)
+    if not user_id:
+        return await Sh.edit("pengguna tidak temukan")
+    try:
+        get_exp = await get_expired_date(user_id)
+        sh = await client.get_users(user_id)
+    except Exception as error:
+        return await Sh.ediit(error)
+    if get_exp is None:
+        await Sh.edit(f"""
+⎆ INFORMATION
+ᚗ name : {sh.mention}
+ᚗ plan : none
+ᚗ id : {user_id}
+ᚗ prefix : .
+ᚗ expired : nonaktif
+""")
+    else:
+        SH = await ubot.get_prefix(user_id)
+        exp = get_exp.strftime("%d-%m-%Y")
+        if user_id in await get_list_from_vars(client.me.id, "ULTRA_PREM"):
+            status = "SuperUltra"
+        else:
+            status = "Premium"
+        await Sh.edit(f"""
+⎆ INFORMATION
+ᚗ name : {sh.mention}
+ᚗ plan : {status}
+ᚗ id : {user_id}
+ᚗ prefix : {' '.join(SH)}
+ᚗ expired : {exp}
+"""
+        )
+
+
 @PY.BOT("addadmin")
 @PY.OWNER
 async def _(client, message):
@@ -377,7 +445,6 @@ async def _(client, message):
     else:
         return await Sh.edit("tidak dapat mengambil daftar admin")
 
-
 @PY.BOT("superultra")
 @PY.OWNER
 async def _(client, message):
@@ -437,7 +504,7 @@ async def _(client, message):
     except Exception as error:
         return await msg.edit(error)
 
-@PY.BOT("unultra")
+@PY.BOT("rmultra")
 @PY.OWNER
 async def _(client, message):
     msg = await message.reply("sedang memproses...")
@@ -497,73 +564,99 @@ async def _(client, message):
         )
     else:
         return await message.reply("tidak ada pengguna superultra saat ini")
-        
-        
-@PY.BOT("set_time")
-@PY.OWNER
+
+
+@PY.UBOT("prem")
 async def _(client, message):
-    Tm = await message.reply("processing . . .")
-    bajingan = message.command
-    if len(bajingan) != 3:
-        return await Tm.edit(f"mohon gunakan /set_time user_id hari")
-    user_id = int(bajingan[1])
-    get_day = int(bajingan[2])
-    print(user_id , get_day)
-    try:
-        get_id = (await client.get_users(user_id)).id
-        user = await client.get_users(user_id)
-    except Exception as error:
-        return await Tm.edit(error)
-    if not get_day:
-        get_day = 30
-    now = datetime.now(timezone("Asia/Jakarta"))
-    expire_date = now + timedelta(days=int(get_day))
-    await set_expired_date(user_id, expire_date)
-    await Tm.edit(f"""
- ⎆ ɪɴғᴏʀᴍᴀᴛɪᴏɴ :
- ⎆ name: {user.mention}
- ⎆ id: {get_id}
- ⎆ aktifkan_selama: {get_day} hari
-"""
-    )
+    user = message.from_user
+    reseller_id = await get_list_from_vars(bot.me.id, "SELER_USERS")
+    admin_id = await get_list_from_vars(bot.me.id, "ADMIN_USERS")
+    if user.id not in reseller_id:
+        return
+    reply = message.reply_to_message
+    args = message.text.split(maxsplit=2)[1:] if not reply else [str(reply.from_user.id)] + message.text.split(maxsplit=1)[1:]
+    
+    if not args:
+        return await message.reply(f"""
+<blockquote>**__⛔ Cara Penggunaan: <code>.prem username/userid waktu</code>
 
+‼️Contoh:
+- <code>.prem 161626262 1b</code> (1 bulan)
+- <code>.prem @username 15h</code> (15 hari)
+- <code>.prem 1b</code> (Gunakan reply ke user)__**</blockquote>""")
 
-@PY.BOT("cek")
-@PY.SELLER
-async def _(client, message):
-    Sh = await message.reply("processing . . .")
-    user_id = await extract_user(message)
-    if not user_id:
-        return await Sh.edit("pengguna tidak ditemukan")
+    user_id, duration = args[0], args[1] if len(args) > 1 else "1b"
 
-    try:
-        get_exp = await get_expired_date(user_id)
-        sh = await client.get_users(user_id)
-    except Exception as error:
-        return await Sh.edit(f"❌ Error: {error}")
-
-    if get_exp is None:
-        await Sh.edit(f"""
-⎆ INFORMATION
-ᚗ name : {sh.mention}
-ᚗ plan : none
-ᚗ id : {user_id}
-ᚗ prefix : .
-ᚗ expired : nonaktif
-""")
+    if duration.endswith("b"):
+        duration_value = int(duration[:-1]) if duration[:-1].isdigit() else 1
+        total_days = duration_value * 30
+    elif duration.endswith("h"):
+        duration_value = int(duration[:-1]) if duration[:-1].isdigit() else 1
+        total_days = duration_value
     else:
-        SH = await ubot.get_prefix(user_id)
-        exp = get_exp.strftime("%d-%m-%Y")
-        if user_id in await get_list_from_vars(client.me.id, "ULTRA_PREM"):
-            status = "SuperUltra"
-        else:
-            status = "Premium"
+        total_days = 30  
 
-        await Sh.edit(f"""
-⎆ INFORMATION
-ᚗ name : {sh.mention}
-ᚗ plan : {status}
-ᚗ id : {user_id}
-ᚗ prefix : {' '.join(SH)}
-ᚗ expired : {exp}
-""")        
+    if user.id in reseller_id and total_days > 30:
+        return await message.reply("<b>⛔ Reseller hanya bisa memberikan maksimal 1 bulan (30 hari).</b>")
+    if user.id in admin_id and total_days > 180:
+        return await message.reply("<b>⛔ Admin hanya bisa memberikan maksimal 6 bulan (180 hari).</b>")
+    if user.id == OWNER_ID and total_days > 3650:
+        return await message.reply("<b>⛔ Maksimal premium adalah 10 tahun (3650 hari).</b>")
+
+    msg = await message.reply("**__⏳ Memproses...__**")
+
+    try:
+        target_user = await client.get_users(user_id)
+    except Exception as error:
+        return await msg.edit(f"**__⛔ Error: {error}__**")
+
+    dataexp = await get_expired_date(user.id)
+    if not dataexp:
+        expired = "⛔ Belum berlangganan"
+    else:
+        expired = dataexp.astimezone(timezone("Asia/Jakarta")).strftime("%d-%m-%Y %H:%M")
+    prem_users = await get_list_from_vars(bot.me.id, "PREM_USERS")
+    if target_user.id in prem_users:
+        return await msg.edit(f"""
+<blockquote>**__👤 Nama: <a href='tg://user?id={target_user.id}'>{target_user.first_name}</a>
+🆔 ID: <code>{target_user.id}</code>
+📚 Keterangan: Sudah Premium
+⏳ Masa Aktif: {expired}__**</blockquote>
+        """)
+
+    try:
+        now = datetime.now(timezone("Asia/Jakarta"))
+        expired = now + timedelta(days=total_days)
+
+        await set_expired_date(target_user.id, expired)
+        await add_to_vars(bot.me.id, "PREM_USERS", target_user.id)
+
+        await msg.edit(f"""
+<blockquote>**__👤 Nama: <a href='tg://user?id={target_user.id}'>{target_user.first_name}</a>
+🆔 ID: <code>{target_user.id}</code>
+⏳ Expired: <code>{expired.strftime('%d-%m-%Y')}</code>
+
+🔹 Silakan buka @{bot.me.username}
+📚 Penggunaan:
+• Ketik /start 
+• Lalu Teken Tombol Buat Userbot, Dan Baca Langkah Langkahnya..__**</blockquote>
+        """)
+
+        return await bot.send_message(
+            OWNER_ID,
+            f"""
+<blockquote>**__👤 Seller/Admin: <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a> (`{message.from_user.id}`)
+👤 Customer: <a href='tg://user?id={target_user.id}'>{target_user.first_name}</a> (`{target_user.id}`)
+⏳ Expired: <code>{expired.strftime('%d-%m-%Y')}</code>__**</blockquote>
+            """,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("⁉️ Seller/Admin", callback_data=f"profil {message.from_user.id}"),
+                        InlineKeyboardButton("Customer ⁉️", callback_data=f"profil {target_user.id}"),
+                    ],
+                ]
+            ),
+        )
+    except Exception as error:
+        return await msg.edit(f"<b>❌ Error:</b> {error}")
