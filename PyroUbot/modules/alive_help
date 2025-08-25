@@ -18,44 +18,6 @@ from pyrogram.types import *
 
 from PyroUbot import *
 
-def emoji(alias):
-    emojis = {
-        "PROCES": "<emoji id=5116240346656801621>❓</emoji>",
-
-        "AKTIF": "<emoji id=4904845878868575100>😇</emoji>",
-        "SAKTIF": "<emoji id=5085022089103016925>⚡️</emoji>",        
-        "TTERSIMPAN": "<emoji id=4904714384149840580>💤</emoji>",
-        "STOPB": "<emoji id=4918014360267260850>⛔️</emoji>",
-        "SUCSESB": "<emoji id=5355051922862653659>🤖</emoji>",
-        "BERHASIL": "<emoji id=5372917041193828849>🚀</emoji>",
-        "GAGALA": "<emoji id=5134457377428341766>🕸</emoji>",
-        "DELAYY": "<emoji id=5123293121043497777>💦</emoji>",
-        "BERHASILS": "<emoji id=5123293121043497777>✅</emoji>",
-        "DELETES": "<emoji id=5902432207519093015>⚙️</emoji>",
-        "STARS": "<emoji id=6142927453854632687>🚬</emoji>",
-        "STARSS": "<emoji id=6028477497518068483>🌟</emoji>",
-        "STRIP": "<emoji id=6154275405990727821>🔸</emoji>",
-        "PREM": "<emoji id=5893034681636491040>📱</emoji>",
-    }
-    return emojis.get(alias, "Emoji tidak ditemukan.")
-
-
-prcs = emoji("PROCES")
-aktf = emoji("AKTIF")
-saktf = emoji("SAKTIF")
-ttsmp = emoji("TTERSIMPAN")
-stopb = emoji("STOPB")
-scsb = emoji("SUCSESB")
-brhsl = emoji("BERHASIL")
-ggla = emoji("GAGALA")
-delayy = emoji("DELAYY")
-brhsls = emoji("BERHASILS")
-dlts = emoji("DELETES")
-stars = emoji("STARS")
-starss = emoji("STARSS")
-strp = emoji("STRIP")
-prem = emoji("PREM")
-
 
 @PY.UBOT("alive")
 @PY.TOP_CMD
@@ -194,7 +156,7 @@ async def user_help(client, message):
 @PY.INLINE("^user_help")
 async def user_help_inline(client, inline_query):
     SH = await ubot.get_prefix(inline_query.from_user.id)
-    msg = f"<blockquote><b>✮ ᴍᴇɴᴜ ɪɴʟɪɴᴇ <a href=tg://user?id={inline_query.from_user.id}>{inline_query.from_user.first_name} {inline_query.from_user.last_name or ''}</a>\nᚗ ᴛᴏᴛᴀʟ ᴍᴏᴅᴜʟᴇs: {len(HELP_COMMANDS)}\nᚗ ᴘʀᴇꜰɪx: {' '.join(SH)}\n♅ ᴜsᴇʀʙᴏᴛ ʙʏ : ✰ @moire</b></blockquote>"
+    msg = f"<blockquote><b>✮ ᴍᴇɴᴜ ɪɴʟɪɴᴇ <a href=tg://user?id={inline_query.from_user.id}>{inline_query.from_user.first_name} {inline_query.from_user.last_name or ''}</a>\nᚗ ᴛᴏᴛᴀʟ ᴍᴏᴅᴜʟᴇs: {len(HELP_COMMANDS)}\nᚗ ᴘʀᴇꜰɪx: {' '.join(SH)}\n♅ ᴜsᴇʀʙᴏᴛ ʙʏ : @ndyoffc\nWe’re all living\nin each other’s paranoia.</b></blockquote>"
     results = [InlineQueryResultArticle(
         title="Help Menu!",
         reply_markup=InlineKeyboardMarkup(paginate_modules(0, HELP_COMMANDS, "help")),
@@ -219,15 +181,14 @@ async def help_callback(client, callback_query):
     tutup_match = re.match(r"help_tutup\((.+?)\)", callback_query.data)
     back_match = re.match(r"help_back", callback_query.data)
     SH = await ubot.get_prefix(callback_query.from_user.id)
-    top_text = f"<blockquote><b>✮ ᴍᴇɴᴜ ɪɴʟɪɴᴇ <a href=tg://user?id={callback_query.from_user.id}>{callback_query.from_user.first_name} {callback_query.from_user.last_name or ''}</a>\nᚗ ᴛᴏᴛᴀʟ ᴍᴏᴅᴜʟᴇs: {len(HELP_COMMANDS)}\nᚗ ᴘʀᴇꜰɪx: {' '.join(SH)}\n♅ ᴜsᴇʀʙᴏᴛ ʙʏ : ✰ @moire</b></blockquote>"
+    top_text = f"<blockquote><b>✮ ᴍᴇɴᴜ ɪɴʟɪɴᴇ <a href=tg://user?id={callback_query.from_user.id}>{callback_query.from_user.first_name} {callback_query.from_user.last_name or ''}</a>\nᚗ ᴛᴏᴛᴀʟ ᴍᴏᴅᴜʟᴇs: {len(HELP_COMMANDS)}\nᚗ ᴘʀᴇꜰɪx: {' '.join(SH)}\n♅ ᴜsᴇʀʙᴏᴛ ʙʏ : @ndyoffc\nWe’re all living\nin each other’s paranoia.</b></blockquote>"
 
     if mod_match:
         module = (mod_match.group(1)).replace(" ", "_")
         text = HELP_COMMANDS[module].__HELP__.format(next((p) for p in SH))
         button = [[InlineKeyboardButton("♅ ʙᴀᴄᴋ ♅", callback_data="help_back")]]
         await callback_query.edit_message_text(
-            text=text 
-            + '\n<blockquote><b> ᣃ࿈ ᴜsᴇʀʙᴏᴛ ᴘʀᴇᴍɪᴜᴍ ࿈ᣄ </a> </b></blockquote>',
+            text=text,
             reply_markup=InlineKeyboardMarkup(button),
             disable_web_page_preview=True,
         )
