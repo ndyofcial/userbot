@@ -18,69 +18,51 @@ __HELP__ = """
 </blockquote>
 """
 
+async def cekid_handler(client, message):
+    user = message.from_user
+    chat = message.chat
+
+    # ========== Private Chat ==========
+    if chat.type == "private":
+        if message.reply_to_message and message.reply_to_message.from_user:
+            # Kalau reply ke orang di private chat
+            replied = message.reply_to_message
+            replied_user = replied.from_user
+            text = f"""Message ID: <code>{message.id}</code>
+Your ID: <code>{user.id}</code>
+Chat ID: <code>{chat.id}</code>
+
+Replied Message Information:
+├ Message ID: <code>{replied.id}</code>
+├ User ID: <code>{replied_user.id}</code>"""
+        else:
+            # Kalau tidak reply
+            text = f"""Message ID: <code>{message.id}</code>
+Your ID: <code>{user.id}</code>
+Chat ID: <code>{chat.id}</code>"""
+
+    # ========== Group/Channel ==========
+    else:
+        chat_title = chat.title or "Private Chat"
+        username_text = f"@{user.username}" if user.username else "Tidak ada"
+        digit_info = f"({len(str(user.id))} digit)"
+        text = f"""
+<b>✉️ Msg ID:</b> <code>{message.id}</code>
+<b>👤 Nama:</b> {user.first_name}
+<b>🔗 Username:</b> {username_text}
+<b>🆔 User ID:</b> <code>{user.id}</code> {digit_info}
+<b>💬 Chat ID:</b> <code>{chat.id}</code> ({chat_title})
+"""
+
+    await message.reply(text, quote=True)
+
+
+# UBOT
 @PY.UBOT("id|cekid|myid")
-async def cekidte(client, message):
-    user = message.from_user
-    target_user = user
+async def _(client, message):
+    await cekid_handler(client, message)
 
-    # Kalau reply ke orang, ambil user dari reply
-    if message.reply_to_message and message.reply_to_message.from_user:
-        target_user = message.reply_to_message.from_user
-
-    # Kalau ada argumen username/ID di perintah
-    elif len(message.command) > 1:
-        try:
-            target_user = await client.get_users(message.command[1])
-        except:
-            return await message.reply("<b>❌ Pengguna tidak ditemukan</b>")
-
-    # Nama chat untuk group/channel
-    chat_title = message.chat.title if isinstance(message.chat, Chat) else "Private Chat"
-    username_text = f"@{target_user.username}" if target_user.username else "Tidak ada"
-
-    digit_info = f"({len(str(target_user.id))} digit)"
-    msg_id_text = f"<code>{message.id}</code>"  # Tambahan Msg ID
-
-    msg = f"""
-</blockquote><b>✉️ Msg ID:</b> {msg_id_text}
-<b>👤 Nama:</b> {target_user.first_name}
-<b>🔗 Username:</b> {username_text}
-<b>🆔 User ID:</b> <code>{target_user.id}</code> {digit_info}
-<b>💬 Chat ID:</b> <code>{message.chat.id}</code> ({chat_title})</blockquote>
-"""
-
-    await message.reply(msg, quote=True)
-    
-    
+# BOT
 @PY.BOT("id|cekid|myid")
-async def cekidte(client, message):
-    user = message.from_user
-    target_user = user
-
-    # Kalau reply ke orang, ambil user dari reply
-    if message.reply_to_message and message.reply_to_message.from_user:
-        target_user = message.reply_to_message.from_user
-
-    # Kalau ada argumen username/ID di perintah
-    elif len(message.command) > 1:
-        try:
-            target_user = await client.get_users(message.command[1])
-        except:
-            return await message.reply("<b>❌ Pengguna tidak ditemukan</b>")
-
-    # Nama chat untuk group/channel
-    chat_title = message.chat.title if isinstance(message.chat, Chat) else "Private Chat"
-    username_text = f"@{target_user.username}" if target_user.username else "Tidak ada"
-
-    digit_info = f"({len(str(target_user.id))} digit)"
-    msg_id_text = f"<code>{message.id}</code>"  # Tambahan Msg ID
-
-    msg = f"""
-</blockquote><b>✉️ Msg ID:</b> {msg_id_text}
-<b>👤 Nama:</b> {target_user.first_name}
-<b>🔗 Username:</b> {username_text}
-<b>🆔 User ID:</b> <code>{target_user.id}</code> {digit_info}
-<b>💬 Chat ID:</b> <code>{message.chat.id}</code> ({chat_title})</blockquote>
-"""
-
-    await message.reply(msg, quote=True)    
+async def _(client, message):
+    await cekid_handler(client, message)
