@@ -134,39 +134,39 @@ async def _(client, message):
 @PY.UBOT("seles")
 async def _(client, message):
     user = message.from_user
-    if user.id != OWNER_ID:
+
+    # cek role
+    admin_users = [int(x) for x in await get_list_from_vars(client.me.id, "ADMIN_USERS")]
+    allowed_users = [OWNER_ID] + admin_users
+    if user.id not in allowed_users:
         return
-    msg = await message.reply("ꜱᴇᴅᴀɴɢ ᴍᴇᴍᴘʀᴏꜱᴇꜱ...")
+
+    msg = await message.reply("sedang memproses...")
     user_id = await extract_user(message)
     if not user_id:
-        return await msg.edit(
-            f"<b>{message.text} ᴜsᴇʀ_ɪᴅ/ᴜsᴇʀɴᴀᴍᴇ</b>"
-        )
+        return await msg.edit(f"<b>{message.text} user_id/username</b>")
 
     try:
-        user = await client.get_users(user_id)
+        target = await client.get_users(user_id)
     except Exception as error:
         return await msg.edit(error)
 
     sudo_users = await get_list_from_vars(bot.me.id, "SELER_USERS")
 
-    if user.id in sudo_users:
+    if target.id in sudo_users:
         return await msg.edit(f"""
-<blockquote><b>ɴᴀᴍᴇ: [{user.first_name} {user.last_name or ''}](tg://user?id={user.id})</b>
-<b>ɪᴅ: `{user.id}`</b>
-<b>ᴋᴇᴛᴇʀᴀɴɢᴀɴ: ꜱᴜᴅᴀʜ ʀᴇꜱᴇʟʟᴇʀ</ci></b></blockquote>
-"""
-        )
+<blockquote><b>name: [{target.first_name} {target.last_name or ''}](tg://user?id={target.id})</b>
+<b>id: `{target.id}`</b>
+<b>keterangan: sudah reseller</b></blockquote>
+""")
 
     try:
-        await add_to_vars(bot.me.id, "SELER_USERS", user.id)
+        await add_to_vars(bot.me.id, "SELER_USERS", target.id)
         return await msg.edit(f"""
-<blockquote><b>ɴᴀᴍᴇ: [{user.first_name} {user.last_name or ''}](tg://user?id={user.id})</b>
-<b>ɪᴅ: `{user.id}`</b>
-<b>ᴋᴇᴛᴇʀᴀɴɢᴀɴ: ʀᴇꜱᴇʟʟᴇʀ</ci></b>
-<b>ꜱɪʟᴀʜᴋᴀɴ ʙᴜᴋᴀ @{bot.me.username}</b></blockquote>
-"""
-        )
+<blockquote><b>name: [{target.first_name} {target.last_name or ''}](tg://user?id={target.id})</b>
+<b>id: `{target.id}`</b>
+<b>keterangan: reseller</b></blockquote>
+""")
     except Exception as error:
         return await msg.edit(error)
 
