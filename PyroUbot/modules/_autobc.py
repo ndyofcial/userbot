@@ -1,11 +1,18 @@
 import asyncio
 import random
+from datetime import datetime, timedelta
 from pyrogram.enums import ChatType
 from pyrogram.errors import FloodWait
 from PyroUbot import *
 
-AG = {}
+# ======================
+# State AutoBC
+# ======================
+AG = {}  # per userbot id: {"status": bool, "round": int}
 
+# ======================
+# Emoji helper (optional)
+# ======================
 def emoji(alias):
     emojis = {
         "PROCES": "<emoji id=5080331039922980916>⚡️</emoji>",
@@ -40,14 +47,47 @@ stars  = emoji("STARS")
 prem   = emoji("PREM")
 put    = emoji("PUTAR")
 
+# ======================
+# Utils
+# ======================
+def now_wib():
+    # WIB = UTC+7 tanpa ketergantungan zoneinfo
+    return datetime.utcnow() + timedelta(hours=7)
 
+def fmt_wib(dt: datetime):
+    # dd-mm-yy HH:MM:SS (sesuai permintaan “16-26-23” = dd-mm-yy)
+    return dt.strftime("%d-%m-%y %H:%M:%S")
+
+def parse_autobc_args(message):
+    """
+    Parsir perintah .autobc
+    Bentuk yang didukung:
+      .autobc on
+      .autobc off
+      .autobc delay 60
+      .autobc perdelay 3
+      .autobc text  (reply ke pesan)
+      .autobc list
+      .autobc remove 2
+    """
+    text = (message.text or message.caption or "").strip()
+    parts = text.split()
+    # parts[0] = .autobc (atau prefix lain), parts[1:] = argumen
+    if len(parts) < 2:
+        return ("help", "")
+    cmd = parts[1].lower()
+    val = parts[2] if len(parts) > 2 else ""
+    return (cmd, val)
+
+# ======================
+# Core AutoBC
+# ======================
 async def run_autobc(client):
     """Loop utama AutoBC"""
-    done, failed, total_round = 0, 0, 0
-    AG[client.me.id] = {"status": True, "round": 0}
+    AG[client.me.id] = {"status": True, "round": AG.get(client.me.id, {}).get("round", 0)}
 
     while AG[client.me.id]["status"]:
-        delay = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)  # menit antar putaran
+        delay_minutes = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)  # menit antar putaran
         per_group_delay = int(await get_vars(client.me.id, "PER_GROUP_DELAY") or 3)  # detik antar grup
 
         blacklist = await get_list_from_vars(client.me.id, "BL_ID")
@@ -59,10 +99,11 @@ async def run_autobc(client):
             await set_vars(client.me.id, "AUTOBCAST", "off")
             return
 
+        # pilih 1 pesan acak dari daftar ID tersimpan (disimpan di Saved Messages)
         message_to_forward = random.choice(auto_texts)
         group_success, failed = 0, 0
-        total_round += 1
-        AG[client.me.id]["round"] = total_round
+        AG[client.me.id]["round"] = AG[client.me.id].get("round", 0) + 1
+        total_round = AG[client.me.id]["round"]
 
         async for dialog in client.get_dialogs():
             if not AG[client.me.id]["status"]:
@@ -84,7 +125,11 @@ async def run_autobc(client):
                     # log error forward
                     await client.send_message(client.me.id, f"❌ Gagal forward ke {dialog.chat.id}\nError: {err}")
 
-                await asyncio.sleep(per_group_delay)  # jeda antar grup
+                await asyncio.sleep(per_group_delay)  # jeda antar grup biar aman
+
+        # Hitung jadwal berikutnya (WIB)
+        next_run = now_wib() + timedelta(minutes=delay_minutes)
+        next_str = fmt_wib(next_run)
 
         await client.send_message(
             client.me.id,
@@ -93,20 +138,23 @@ async def run_autobc(client):
 ✅ Berhasil : {group_success} Chat
 ❌ Gagal : {failed} Chat
 ⏳ Putaran Ke : {total_round}
-🕒 Jeda Putaran : {delay} Menit
+🕒 Jeda Putaran : {delay_minutes} Menit
 ⏱️ Delay per Grup : {per_group_delay} Detik
+📆 Next AutoBC (WIB) : <b>{next_str}</b>
 """
         )
 
-        await asyncio.sleep(60 * delay)
+        await asyncio.sleep(60 * delay_minutes)
 
-
+# ======================
+# Commands
+# ======================
 @PY.UBOT("autobc")
 async def _(client, message):
     msg = await message.reply(f"<b><i>{prcs} Processing...</i></b>")
-    type, value = extract_type_and_text(message)
+    cmd, value = parse_autobc_args(message)
 
-    if type == "on":
+    if cmd == "on":
         if AG.get(client.me.id, {}).get("status"):
             return await msg.edit(f"<b><i>{saktf} Auto Broadcast sudah aktif.</i></b>")
 
@@ -120,75 +168,90 @@ async def _(client, message):
         await msg.edit(f"<b><i>{aktf} Auto Broadcast diaktifkan.</i></b>")
         asyncio.create_task(run_autobc(client))
 
-    elif type == "off":
-        AG[client.me.id] = {"status": False}
+    elif cmd == "off":
+        AG[client.me.id] = {"status": False, "round": AG.get(client.me.id, {}).get("round", 0)}
         await set_vars(client.me.id, "AUTOBCAST", "off")
         return await msg.edit(f"<b><i>{stopb} Auto Broadcast dihentikan.</i></b>")
 
-    elif type == "delay":
+    elif cmd == "delay":
         if not value.isdigit():
-            return await msg.edit(f"<b><i>{stopb} Format salah! Gunakan .autobc delay [angka]</i></b>")
+            return await msg.edit(f"<b><i>{stopb} Format salah! Gunakan <code>.autobc delay [menit]</code></i></b>")
         await set_vars(client.me.id, "DELAY_GCAST", value)
-        return await msg.edit(f"<b><i>{delayy} Delay antar putaran berhasil diatur ke {value} menit.</i></b>")
+        return await msg.edit(f"<b><i>{delayy} Delay antar putaran diatur ke {value} menit.</i></b>")
 
-    elif type == "perdelay":
+    elif cmd == "perdelay":
         if not value.isdigit():
-            return await msg.edit(f"<b><i>{stopb} Format salah! Gunakan .autobc perdelay [detik]</i></b>")
-
+            return await msg.edit(f"<b><i>{stopb} Format salah! Gunakan <code>.autobc perdelay [detik]</code></i></b>")
         val = int(value)
         if val < 3:  # minimal 3 detik biar aman
             return await msg.edit(f"<b><i>{stopb} Minimal delay per grup adalah 3 detik.</i></b>")
-
         await set_vars(client.me.id, "PER_GROUP_DELAY", str(val))
-        return await msg.edit(f"<b><i>{delayy} Delay per grup berhasil diatur ke {val} detik.</i></b>")
+        return await msg.edit(f"<b><i>{delayy} Delay per grup diatur ke {val} detik.</i></b>")
 
-    elif type == "text":
+    elif cmd == "text":
         if not message.reply_to_message:
-            return await msg.edit(f"<b><i>{stopb} Format salah! Harap reply ke pesan yang ingin disimpan.</i></b>")
-
+            return await msg.edit(f"<b><i>{stopb} Harap reply ke pesan yang ingin disimpan.</i></b>")
         saved_msg = await message.reply_to_message.copy("me")
         await add_auto_text(client.me.id, saved_msg.id)
-        return await msg.edit(f"<b><i>{brhsls} Pesan berhasil disimpan dengan ID {saved_msg.id}</i></b>")
+        return await msg.edit(f"<b><i>{brhsls} Pesan berhasil disimpan dengan ID <code>{saved_msg.id}</code></i></b>")
 
-    elif type == "list":
+    elif cmd == "list":
         auto_texts = await get_auto_text(client.me.id)
         if not auto_texts:
             return await msg.edit(f"<b><i>{ttsmp} Tidak ada pesan tersimpan.</i></b>")
-
-        teks = "\n".join([f"{i+1}. ID: {t}" for i, t in enumerate(auto_texts)])
+        teks = "\n".join([f"{i+1}. ID: <code>{t}</code>" for i, t in enumerate(auto_texts)])
         return await msg.edit(f"<b><i>{stars} Daftar Pesan AutoBC:</i></b>\n\n{teks}")
 
-    elif type == "remove":
+    elif cmd == "remove":
         if not value.isdigit():
-            return await msg.edit(f"<b><i>{stopb} Harap masukkan nomor urut pesan yang valid.</i></b>")
-
+            return await msg.edit(f"<b><i>{stopb} Harap masukkan nomor urut yang valid. Contoh: <code>.autobc remove 2</code></i></b>")
         idx = int(value) - 1
         auto_texts = await get_auto_text(client.me.id)
+        if not auto_texts:
+            return await msg.edit(f"<b><i>{ttsmp} Tidak ada pesan tersimpan.</i></b>")
         if idx < 0 or idx >= len(auto_texts):
-            return await msg.edit(f"<b><i>{stopb} ID tidak ditemukan.</i></b>")
-
+            return await msg.edit(f"<b><i>{stopb} Nomor urut tidak ditemukan.</i></b>")
         removed = auto_texts[idx]
         await remove_auto_text(client.me.id, idx)
-        return await msg.edit(f"<b><i>{dlts} Pesan dengan ID {removed} berhasil dihapus.</i></b>")
+        return await msg.edit(f"<b><i>{dlts} Pesan dengan ID <code>{removed}</code> berhasil dihapus.</i></b>")
 
+    else:
+        return await msg.edit(
+            f"""<b>📣 AutoBC Help</b>
 
+<code>.autobc on</code> — aktifkan
+<code>.autobc off</code> — hentikan
+<code>.autobc delay 60</code> — jeda antar putaran (menit)
+<code>.autobc perdelay 3</code> — jeda antar grup (detik, min 3)
+<code>.autobc text</code> — reply ke pesan untuk disimpan
+<code>.autobc list</code> — daftar pesan tersimpan
+<code>.autobc remove 2</code> — hapus pesan tersimpan nomor 2
+"""
+        )
+
+# ======================
+# Auto Resume on start
+# ======================
 async def resume_autobc(client):
     """Dipanggil otomatis pas start ubot"""
     status = await get_vars(client.me.id, "AUTOBCAST")
     if status == "on":
-        delay = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)
+        delay_minutes = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)
         per_group_delay = int(await get_vars(client.me.id, "PER_GROUP_DELAY") or 3)
         round_no = AG.get(client.me.id, {}).get("round", 0) + 1
+
+        next_run = now_wib() + timedelta(minutes=delay_minutes)
+        next_str = fmt_wib(next_run)
 
         await client.send_message(
             client.me.id,
             f"""📣 AutoBC #{round_no} (Resume)
-🕒 Delay antar putaran: {delay} menit
+🕒 Delay antar putaran: {delay_minutes} menit
 ⏱️ Delay per grup: {per_group_delay} detik
-📬 Broadcast akan dilanjutkan sesuai jadwal."""
+📆 Next AutoBC (WIB) : <b>{next_str}</b>
+"""
         )
         asyncio.create_task(run_autobc(client))
-
 
 @PY.UBOT("start")
 async def start_handler(client, message):
