@@ -6,6 +6,7 @@ from pyrogram.errors import FloodWait
 from PyroUbot import *
 
 AG = {}  # per userbot id: {"status": bool, "round": int, "last": datetime, "next": datetime}
+BLACKLIST_CHAT = []  # default kosong, tambahin ID grup kalau mau exclude
 
 
 def now_wib():
@@ -188,7 +189,7 @@ async def _(client, message):
         return await msg.edit(f"<b><i>⚙️ Pesan dengan ID <code>{removed}</code> berhasil dihapus.</i></b>")
 
     else:
-        return await msg.edit(f"<b><i>{stopb} Format salah! Gunakan .autobc [query] - [value]</i></b>")
+        return await msg.edit("<b><i>⛔ Format salah! Gunakan .autobc [query] - [value]</i></b>")
 
 
 # ======================
