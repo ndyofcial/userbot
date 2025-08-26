@@ -25,45 +25,49 @@ from pyrogram.enums import ChatType
 async def cekid_handler(client, message):
     user = message.from_user
     chat = message.chat
-    args = message.text.split(maxsplit=1)
 
-    target_user = None
-
-    # Kalau reply → ambil user dari reply
-    if message.reply_to_message and message.reply_to_message.from_user:
-        target_user = message.reply_to_message.from_user
-
-    # Kalau pakai argumen → resolve username / user_id
-    elif len(args) > 1:
-        try:
-            target_user = await client.get_users(args[1])
-        except Exception as e:
-            return await message.reply(f"❌ Tidak bisa menemukan user: <code>{args[1]}</code>\nError: {e}")
-
-    # Default → user pengirim sendiri
+    # ========== Private Chat (user ↔ user) ==========
+if chat.type in [ChatType.PRIVATE, ChatType.BOT]:
+    # ambil ID lawan chat
+    if chat.id != user.id:
+        chat_id_text = f"<code>{chat.id}</code>"
     else:
-        target_user = user
+        chat_id_text = "<i>Tidak ada (self-chat)</i>"
 
-    # ========== Private Chat ==========
-    if chat.type in [ChatType.PRIVATE, ChatType.BOT]:
+    if message.reply_to_message and message.reply_to_message.from_user:
+        replied = message.reply_to_message
+        replied_user = replied.from_user
         text = f"""Message ID: <code>{message.id}</code>
 Your ID: <code>{user.id}</code>
-Chat ID: <code>{chat.id}</code>
+Chat ID: {chat_id_text}
 
-Target User Information:
-├ Nama: {target_user.first_name}
-├ User ID: <code>{target_user.id}</code>
-├ Username: @{target_user.username if target_user.username else 'Tidak ada'}"""
+Replied Message Information:
+├ Message ID: <code>{replied.id}</code>
+├ User ID: <code>{replied_user.id}</code>"""
+    else:
+        text = f"""Message ID: <code>{message.id}</code>
+Your ID: <code>{user.id}</code>
+Chat ID: <code>{chat_id_text}</code>"""
 
     # ========== Group / Supergroup ==========
     elif chat.type in [ChatType.GROUP, ChatType.SUPERGROUP]:
         chat_title = chat.title or "Group"
-        digit_info = f"({len(str(target_user.id))} digit)"
+        username_text = f"@{user.username}" if user.username else "Tidak ada"
+        digit_info = f"({len(str(user.id))} digit)"
         text = f"""✉️ Msg ID: <code>{message.id}</code>
-👤 Nama: {target_user.first_name}
-🔗 Username: @{target_user.username if target_user.username else 'Tidak ada'}
-🆔 User ID: <code>{target_user.id}</code> {digit_info}
+👤 Nama: {user.first_name}
+🔗 Username: {username_text}
+🆔 User ID: <code>{user.id}</code> {digit_info}
 💬 Chat ID: <code>{chat.id}</code> ({chat_title})"""
+
+        if message.reply_to_message and message.reply_to_message.from_user:
+            replied = message.reply_to_message
+            replied_user = replied.from_user
+            text += f"""
+
+Replied Message Information:
+├ Message ID: <code>{replied.id}</code>
+├ User ID: <code>{replied_user.id}</code>"""
 
     # ========== Channel ==========
     elif chat.type == ChatType.CHANNEL:
