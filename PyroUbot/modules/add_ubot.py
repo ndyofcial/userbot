@@ -10,6 +10,7 @@ from pyrogram.raw import functions
 from PyroUbot import *
 
 
+# Start handler
 @PY.BOT("start")
 @PY.START
 @PY.PRIVATE
@@ -22,7 +23,7 @@ async def _(client, message):
             [KeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")],
             [KeyboardButton("⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼"), KeyboardButton("⳹ ᴏᴡɴᴇʀ ⳼")],
             [KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼"), KeyboardButton("⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫")],
-            [KeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫")]
+            [KeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫"), KeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫")]
         ]
     else:
         buttons = [
@@ -44,12 +45,13 @@ async def _(client, message):
         reply_markup=reply_markup
     )
 
+# Handler teks untuk ReplyKeyboard
 @PY.BOT("text")
 async def handle_text(client, message):
     text = message.text
     user_id = message.from_user.id
 
-    # tombol lainnya
+    # Tombol ReplyKeyboard lainnya
     if text == "⦪ ᴛʀɪᴀʟ ⦫":
         await message.reply("Menjalankan TRIAL...")
     elif text == "⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫":
@@ -60,7 +62,7 @@ async def handle_text(client, message):
         await message.reply("Link repo: t.me/moire_marketx")
     elif text == "⳹ ᴏᴡɴᴇʀ ⳼":
         await message.reply("Link owner: t.me/moire_mor")
-    elif text == "⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼":
+    elif text == "⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼" or text == "⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫":
         await message.reply("Menjalankan BUAT USERBOT...")
     elif text == "⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫":
         await message.reply("Menjalankan HELP MENU...")
@@ -71,11 +73,13 @@ async def handle_text(client, message):
     elif text == "⦪ ʀᴇsᴛᴀʀᴛ ⦫":
         await message.reply("Menjalankan RESTART...")
 
-    # tombol List Userbot
+    # Tombol List Userbot → memanggil InlineKeyboard versi cek_ubot
     elif text == "⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫":
-        # panggil fungsi cek_ubot secara langsung
-        # misal cek_ubot(client, message) itu fungsi asli callback
-        await cek_ubot(client, message)
+        ubot_text = await MSG.UBOT(0)
+        markup = InlineKeyboardMarkup(
+            BTN.UBOT(ubot._ubot[0].me.id, 0)
+        )
+        await message.reply(ubot_text, reply_markup=markup)
 
 
 @PY.CALLBACK("bahan")
@@ -483,6 +487,7 @@ async def _(client, message):
                     except Exception as error:
                         return await msg.edit(f"{error}")
 
+# Callback handler tetap seperti ini
 @PY.CALLBACK("cek_ubot")
 @PY.BOT("getubot")
 @PY.ADMIN
@@ -492,6 +497,7 @@ async def _(client, callback_query):
         await MSG.UBOT(0),
         reply_markup=InlineKeyboardMarkup(BTN.UBOT(ubot._ubot[0].me.id, 0)),
     )
+
 
 @PY.CALLBACK("cek_masa_aktif")
 async def _(client, callback_query):
