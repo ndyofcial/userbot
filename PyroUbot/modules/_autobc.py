@@ -96,7 +96,7 @@ async def run_autobc(client):
 # ======================
 @PY.UBOT("autobc")
 async def _(client, message):
-    msg = await message.reply("<b><i>⚡ Processing...</i></b>")
+    msg = await message.reply("<b><i>Format salah! Gunakan .autobc [query] - [value]</i></b>")
     cmd, value = parse_autobc_args(message)
 
     if cmd == "on":
