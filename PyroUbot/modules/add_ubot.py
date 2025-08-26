@@ -74,11 +74,13 @@ async def handle_text(client, message):
         await message.reply("Menjalankan RESTART...")
 
     # Tombol List Userbot → memanggil InlineKeyboard versi cek_ubot
-    elif text == "⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫":
-        ubot_text = await MSG.UBOT(0)
-        markup = InlineKeyboardMarkup(
-            BTN.UBOT(ubot._ubot[0].me.id, 0)
-        )
+    if text == "⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫":
+        if not ubot._ubot:
+            return await message.reply("<b>⎆ Belum ada userbot terdaftar.</b>")
+        
+        index = 0  # mulai dari userbot pertama
+        ubot_text = await MSG.UBOT(index)
+        markup = InlineKeyboardMarkup(BTN.UBOT(ubot._ubot[index].me.id, index))
         await message.reply(ubot_text, reply_markup=markup)
 
 
@@ -487,15 +489,19 @@ async def _(client, message):
                     except Exception as error:
                         return await msg.edit(f"{error}")
 
-# Callback handler tetap seperti ini
+
 @PY.CALLBACK("cek_ubot")
 @PY.BOT("getubot")
 @PY.ADMIN
 async def _(client, callback_query):
+    if not ubot._ubot:
+        return await callback_query.answer("⎆ Belum ada userbot terdaftar", True)
+    
+    index = 0
     await bot.send_message(
         callback_query.from_user.id,
-        await MSG.UBOT(0),
-        reply_markup=InlineKeyboardMarkup(BTN.UBOT(ubot._ubot[0].me.id, 0)),
+        await MSG.UBOT(index),
+        reply_markup=InlineKeyboardMarkup(BTN.UBOT(ubot._ubot[index].me.id, index)),
     )
 
 
@@ -547,23 +553,24 @@ async def _(client, callback_query):
             )
 
     
-@PY.CALLBACK("^(p_ub|n_ub)")
-async def _(client, callback_query):
-    query = callback_query.data.split()
-    count = int(query[1])
-    if query[0] == "n_ub":
-        if count == len(ubot._ubot) - 1:
-            count = 0
-        else:
-            count += 1
-    elif query[0] == "p_ub":
-        if count == 0:
-            count = len(ubot._ubot) - 1
-        else:
-            count -= 1
+@PY.CALLBACK("^(p_ub|n_ub)$")
+async def navigate_userbot(client, callback_query):
+    if not ubot._ubot:
+        return await callback_query.answer("⎆ Belum ada userbot aktif", True)
+
+    data = callback_query.data.split()
+    action = data[0]
+    count = int(data[1])
+
+    if action == "n_ub":
+        count = (count + 1) % len(ubot._ubot)
+    elif action == "p_ub":
+        count = (count - 1) % len(ubot._ubot)
+
+    ubot_text = await MSG.UBOT(count)
+    markup = InlineKeyboardMarkup(BTN.UBOT(ubot._ubot[count].me.id, count))
     await callback_query.edit_message_text(
-        await MSG.UBOT(count),
-        reply_markup=InlineKeyboardMarkup(
-            BTN.UBOT(ubot._ubot[count].me.id, count)
-        ),
+        ubot_text,
+        reply_markup=markup,
+        disable_web_page_preview=True
     )
