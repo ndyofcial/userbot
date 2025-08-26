@@ -116,8 +116,8 @@ class BTN:
         ]
 
 
-def START_KEYBOARD(user_id):
-    if user_id != OWNER_ID:
+def START(message):
+        if not message.from_user.id == OWNER_ID:
         button = [
             [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫")],
             [KeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")],
