@@ -74,59 +74,6 @@ Anda bebas, sebebas burung yang lepas.
     else:
         return await message.reply("❌ Tidak bisa membaca status dari SpamBot.")
 
-
-@PY.BOT("limit")
-@PY.TOP_CMD
-async def _(client, message):
-    prs = await EMO.PROSES(client)
-    pong = await EMO.PING(client)
-    yubot = await EMO.UBOT(client)
-
-    # Unblock dan start SpamBot
-    await client.unblock_user("SpamBot")
-    bot_info = await client.resolve_peer("SpamBot")
-    msg = await message.reply(f"{prs}processing . . .")
-    response = await client.invoke(
-        StartBot(
-            bot=bot_info,
-            peer=bot_info,
-            random_id=client.rnd_id(),
-            start_param="start",
-        )
-    )
-    await sleep(1)
-    await msg.delete()
-
-    # Ambil balasan dari SpamBot
-    status = await client.get_messages("SpamBot", response.updates[1].message.id + 1) 
-    if status and hasattr(status, "text"):
-        teks_spambot = status.text.lower()
-
-        if "dibatasi" in teks_spambot or "restricted" in teks_spambot or "limit" in teks_spambot:
-            # Akun kena limit → kirim isi asli dari SpamBot
-            text = f"""
-<b>⌭ {pong} Status Akun : LIMIT 🚫</b>
-{status.text}
-
-<b> ~ ⭐{client.me.mention}</b>
-"""
-        else:
-            # Akun tidak kena limit
-            text = f"""
-<b>⌭ {pong} Status Akun : ✅ Tidak Dibatasi</b>
-✅ Kabar baik, akun anda tidak dibatasi.
-Anda bebas, sebebas burung yang lepas.
-
-<b> ~ ⭐{client.me.mention}</b>
-"""
-        await client.send_message(message.chat.id, text)
-        # Hapus history SpamBot biar bersih
-        return await client.invoke(DeleteHistory(peer=bot_info, max_id=0, revoke=True))
-    else:
-        return await message.reply("❌ Tidak bisa membaca status dari SpamBot.")
-        
-        
-        
 async def make_carbon(code):
     url = "https://carbonara.solopov.dev/api/cook"
     async with aiosession.post(url, json={"code": code}) as resp:
