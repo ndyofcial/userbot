@@ -191,7 +191,7 @@ async def _(client, message):
         return await msg.edit(f"<b><i>⚙️ Pesan dengan ID <code>{removed}</code> berhasil dihapus.</i></b>")
 
 # ======================
-# Auto Resume on startup
+# Auto Resume on start
 # ======================
 async def resume_autobc(client):
     status = await get_vars(client.me.id, "AUTOBCAST")
@@ -218,7 +218,6 @@ async def resume_autobc(client):
         )
         asyncio.create_task(run_autobc(client))
 
-# Hook langsung pas ubot aktif
-@PY.ON("ready")
-async def _(client):
+# Auto jalan pas modul diload
+async def __load__(client):
     await resume_autobc(client)
