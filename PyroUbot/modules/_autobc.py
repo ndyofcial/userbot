@@ -102,7 +102,7 @@ async def _(client, message):
     if cmd == "on":
         db_status = await get_vars(client.me.id, "AUTOBCAST")
         if AG.get(client.me.id, {}).get("status") or db_status == "on":
-            return await msg.edit("<b><i>⚡ Auto Broadcast sudah aktif.</i></b>")
+            return await msg.edit("<b><i>⚡ Auto Broadcast diaktifkan. ✨</i></b>")
 
         if not await get_vars(client.me.id, "DELAY_GCAST"):
             await set_vars(client.me.id, "DELAY_GCAST", "60")
