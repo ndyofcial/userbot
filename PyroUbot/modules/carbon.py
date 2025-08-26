@@ -27,12 +27,11 @@ __HELP__ = """
 @PY.UBOT("limit")
 @PY.TOP_CMD
 async def _(client, message):
-    ggl = await EMO.GAGAL(client)
-    sks = await EMO.BERHASIL(client)
     prs = await EMO.PROSES(client)
     pong = await EMO.PING(client)
-    tion = await EMO.MENTION(client)
     yubot = await EMO.UBOT(client)
+
+    # Unblock dan start SpamBot
     await client.unblock_user("SpamBot")
     bot_info = await client.resolve_peer("SpamBot")
     msg = await message.reply(f"{prs}processing . . .")
@@ -46,50 +45,40 @@ async def _(client, message):
     )
     await sleep(1)
     await msg.delete()
+
+    # Ambil balasan dari SpamBot
     status = await client.get_messages("SpamBot", response.updates[1].message.id + 1) 
     if status and hasattr(status, "text"):
-        pjg = len(status.text)
-        print(pjg)
-        if pjg <= 100:
-            if client.me.is_premium:
-                text = f"""
-<blockquote><b>⌭ {pong} sᴛᴀᴛᴜs ᴀᴋᴜɴ ᴘʀᴇᴍɪᴜᴍ : ᴛʀᴜᴇ</b>
-<b>⌭ {tion} ʟɪᴍɪᴛ ᴄʜᴇᴄᴋ : ᴀᴋᴜɴ ᴀɴᴅᴀ ᴛɪᴅᴀᴋ ᴅɪʙᴀᴛᴀsɪ</b>
-<b>⌭ {yubot} ᴜʙᴏᴛ : {bot.me.mention}</b></blockquote>
+        teks_spambot = status.text.lower()
 
-<blockquote><b>ᣃ࿈ ᴜsᴇʀʙᴏᴛ ᴘʀᴇᴍɪᴜᴍ ࿈ᣄ</b></blockquote>
-"""
-            else:
-                text = f"""
-<blockquote><b>⌭ sᴛᴀᴛᴜs ᴀᴋᴜɴ  : ʙᴇʟɪ ᴘʀᴇᴍ ᴅᴜʟᴜ ʏᴀ</b>
-<b>⌭ ʟɪᴍɪᴛ ᴄʜᴇᴄᴋ : ᴀᴋᴜɴ ᴀɴᴅᴀ ᴛɪᴅᴀᴋ ᴅɪʙᴀᴛᴀsɪ</b>
-<b>⌭ ᴜʙᴏᴛ : {bot.me.mention}</b></blockquote>
+        if "dibatasi" in teks_spambot or "restricted" in teks_spambot or "limit" in teks_spambot:
+            # Akun kena limit → kirim isi asli dari SpamBot
+            text = f"""
+<blockquote><b>⌭ {pong} Status Akun : LIMIT 🚫</b></blockquote>
 
-<blockquote><b>ᣃ࿈ ᴜsᴇʀʙᴏᴛ ᴘʀᴇᴍɪᴜᴍ ࿈ᣄ</b></blockquote>
+<blockquote>{status.text}</blockquote>
+
+<blockquote><b>⌭ {yubot} Ubot : {client.me.mention}</b></blockquote>
+
+<blockquote><b>ᣃ࿈ Userbot Premium ࿈ᣄ</b></blockquote>
 """
-            await client.send_message(message.chat.id, text)
-            return await client.invoke(DeleteHistory(peer=bot_info, max_id=0, revoke=True))
         else:
-            if client.me.is_premium:
-                text = f"""
-<blockquote><b>⌭ {pong} sᴛᴀᴛᴜs ᴀᴋᴜɴ ᴘʀᴇᴍɪᴜᴍ : ᴛʀᴜᴇ</b>
-<b>⌭ {tion} ʟɪᴍɪᴛ ᴄʜᴇᴄᴋ : ᴀᴋᴜɴ ᴀɴᴅᴀ ʙᴇʀᴍᴀsᴀʟᴀʜ</b> 
-<b>⌭ {yubot} ᴜʙᴏᴛ : {bot.me.mention}</b></blockquote>
+            # Akun tidak kena limit
+            text = f"""
+<blockquote><b>⌭ {pong} Status Akun : ✅ Tidak Dibatasi</b></blockquote>
 
-<blockquote><b>ᣃ࿈ ᴜsᴇʀʙᴏᴛ ᴘʀᴇᴍɪᴜᴍ ࿈ᣄ</b></blockquote>
-"""
-            else:
-                text = f"""
-<blockquote><b>⌭ sᴛᴀᴛᴜs ᴀᴋᴜɴ  : ʙᴇʟɪ ᴘʀᴇᴍ ᴅᴜʟᴜ ʏᴀ</b>
-<b>⌭ ʟɪᴍɪᴛ ᴄʜᴇᴄᴋ : ᴀᴋᴜɴ ᴀɴᴅᴀ ʙᴇʀᴍᴀsᴀʟᴀʜ</b>
-<b>⌭ ᴜʙᴏᴛ : {bot.me.mention}</b></blockquote>
+<blockquote>✅ Kabar baik, akun anda tidak dibatasi.
+Anda bebas, sebebas burung yang lepas.</blockquote>
 
-<blockquote><b>ᣃ࿈ ᴜsᴇʀʙᴏᴛ ᴘʀᴇᴍɪᴜᴍ ࿈ᣄ</b></blockquote>
+<blockquote><b>⌭ {yubot} Ubot : {client.me.mention}</b></blockquote>
+
+<blockquote><b>ᣃ࿈ Userbot Premium ࿈ᣄ</b></blockquote>
 """
-            await client.send_message(message.chat.id, text)
-            return await client.invoke(DeleteHistory(peer=bot_info, max_id=0, revoke=True))
+        await client.send_message(message.chat.id, text)
+        # Hapus history SpamBot biar bersih
+        return await client.invoke(DeleteHistory(peer=bot_info, max_id=0, revoke=True))
     else:
-        print("Status tidak valid atau status.text tidak ada")
+        return await message.reply("❌ Tidak bisa membaca status dari SpamBot.")
 
 async def make_carbon(code):
     url = "https://carbonara.solopov.dev/api/cook"
