@@ -180,15 +180,14 @@ async def _(client, callback_query):
 
     # tombol share contact
     keyboard = ReplyKeyboardMarkup(
-        [[KeyboardButton("📱 Bagikan Nomor Saya", request_contact=True)]],
+        [[KeyboardButton("📞Kontak Saya", request_contact=True)]],
         resize_keyboard=True,
         one_time_keyboard=True
     )
 
     msg = await bot.send_message(
         user_id,
-        "<b>⎆ Klik tombol di bawah untuk mengirim nomor Telegram Anda.</b>\n"
-        "<i>Gunakan /cancel untuk membatalkan.</i>",
+        "<blockquote><b>Silahkan klik tombol 📞 Kontak Saya untuk mengirimkan Nomor Telepon Telegram Anda.</b></blockquote>",
         reply_markup=keyboard
     )
 
