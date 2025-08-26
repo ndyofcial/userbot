@@ -17,7 +17,6 @@ async def _(client, message):
     user_id = message.from_user.id
 
     if user_id != OWNER_ID:
-        # tombol untuk user biasa
         buttons = [
             [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫")],
             [KeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")],
@@ -26,7 +25,6 @@ async def _(client, message):
             [KeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫")]
         ]
     else:
-        # tombol khusus owner
         buttons = [
             [KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")],
             [KeyboardButton("⦪ ɢɪᴛᴘᴜʟʟ ⦫"), KeyboardButton("⦪ ʀᴇsᴛᴀʀᴛ ⦫")],
@@ -35,8 +33,8 @@ async def _(client, message):
 
     reply_markup = ReplyKeyboardMarkup(
         buttons,
-        resize_keyboard=True,  # tombol menyesuaikan ukuran
-        one_time_keyboard=True # tombol hilang setelah ditekan
+        resize_keyboard=True,
+        one_time_keyboard=False
     )
 
     msg = MSG.START(message)
@@ -45,6 +43,39 @@ async def _(client, message):
         caption=msg,
         reply_markup=reply_markup
     )
+
+@PY.BOT("text")
+async def handle_text(client, message):
+    text = message.text
+    user_id = message.from_user.id
+
+    # tombol lainnya
+    if text == "⦪ ᴛʀɪᴀʟ ⦫":
+        await message.reply("Menjalankan TRIAL...")
+    elif text == "⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫":
+        await message.reply("Menjalankan BELI USERBOT...")
+    elif text == "⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫":
+        await message.reply("Menjalankan RESET PREFIX...")
+    elif text == "⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼":
+        await message.reply("Link repo: t.me/moire_marketx")
+    elif text == "⳹ ᴏᴡɴᴇʀ ⳼":
+        await message.reply("Link owner: t.me/moire_mor")
+    elif text == "⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼":
+        await message.reply("Menjalankan BUAT USERBOT...")
+    elif text == "⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫":
+        await message.reply("Menjalankan HELP MENU...")
+    elif text == "⦪ sᴜᴘᴘᴏʀᴛ ⦫":
+        await message.reply("Menjalankan SUPPORT...")
+    elif text == "⦪ ɢɪᴛᴘᴜʟʟ ⦫":
+        await message.reply("Menjalankan GITPULL...")
+    elif text == "⦪ ʀᴇsᴛᴀʀᴛ ⦫":
+        await message.reply("Menjalankan RESTART...")
+
+    # tombol List Userbot
+    elif text == "⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫":
+        # panggil fungsi cek_ubot secara langsung
+        # misal cek_ubot(client, message) itu fungsi asli callback
+        await cek_ubot(client, message)
 
 
 @PY.CALLBACK("bahan")
