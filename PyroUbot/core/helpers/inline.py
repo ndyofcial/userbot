@@ -141,7 +141,8 @@ class BTN:
     
     # START -> diganti ke ReplyKeyboardMarkup
     def START(message):
-        if message.from_user.id == OWNER_ID:
+        if message.from_user.id != OWNER_ID:
+            # MENU UNTUK USER
             button = [
                 [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫")],
                 [
@@ -159,6 +160,7 @@ class BTN:
                 [KeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫")]
             ]
         else:
+            # MENU UNTUK OWNER
             button = [
                 [
                     KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫"),
@@ -168,9 +170,7 @@ class BTN:
                     KeyboardButton("⦪ ɢɪᴛᴘᴜʟʟ ⦫"),
                     KeyboardButton("⦪ ʀᴇsᴛᴀʀᴛ ⦫")
                 ],
-                [
-                    KeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫")
-                ]
+                [KeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫")]
             ]
 
         return ReplyKeyboardMarkup(button, resize_keyboard=True)
