@@ -218,7 +218,8 @@ async def resume_autobc(client):
         )
         asyncio.create_task(run_autobc(client))
 
-@PY.BOT("start")
+@PY.UBOT("start")
 async def start_handler(client, message):
     await resume_autobc(client)
     return await message.reply("✅ Bot sudah berjalan.")
+
