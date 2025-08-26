@@ -6,6 +6,7 @@ from PyroUbot import *
 from io import BytesIO
 
 from pyrogram.types import Chat
+from pyrogram.enums import ChatType
 
 __MODULE__ = "ᴄᴇᴋ ɪᴅ"
 __HELP__ = """
@@ -20,34 +21,29 @@ __HELP__ = """
 </blockquote>
 """
 
-from pyrogram.enums import ChatType
-
 async def cekid_handler(client, message):
     user = message.from_user
     chat = message.chat
 
     # ========== Private Chat (user ↔ user) ==========
-if chat.type in [ChatType.PRIVATE, ChatType.BOT]:
-    # ambil ID lawan chat
-    if chat.id != user.id:
-        chat_id_text = f"<code>{chat.id}</code>"
-    else:
-        chat_id_text = "<i>Tidak ada (self-chat)</i>"
+    if chat.type in [ChatType.PRIVATE, ChatType.BOT]:
+        # Ambil ID lawan chat (biar bukan ID kita sendiri)
+        target_id = chat.id  
 
-    if message.reply_to_message and message.reply_to_message.from_user:
-        replied = message.reply_to_message
-        replied_user = replied.from_user
-        text = f"""Message ID: <code>{message.id}</code>
+        if message.reply_to_message and message.reply_to_message.from_user:
+            replied = message.reply_to_message
+            replied_user = replied.from_user
+            text = f"""Message ID: <code>{message.id}</code>
 Your ID: <code>{user.id}</code>
-Chat ID: {chat_id_text}
+Chat ID (Target): <code>{target_id}</code>
 
 Replied Message Information:
 ├ Message ID: <code>{replied.id}</code>
 ├ User ID: <code>{replied_user.id}</code>"""
-    else:
-        text = f"""Message ID: <code>{message.id}</code>
+        else:
+            text = f"""Message ID: <code>{message.id}</code>
 Your ID: <code>{user.id}</code>
-Chat ID: <code>{chat_id_text}</code>"""
+Chat ID (Target): <code>{target_id}</code>"""
 
     # ========== Group / Supergroup ==========
     elif chat.type in [ChatType.GROUP, ChatType.SUPERGROUP]:
