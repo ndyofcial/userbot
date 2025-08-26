@@ -141,7 +141,7 @@ class BTN:
     
     # START -> diganti ke ReplyKeyboardMarkup
     def START(message):
-        if not message.from_user.id == OWNER_ID:
+        if message.from_user.id == OWNER_ID:
             button = [
                 [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫")],
                 [
