@@ -96,13 +96,12 @@ async def run_autobc(client):
 # ======================
 @PY.UBOT("autobc")
 async def _(client, message):
-    msg = await message.reply("<b><i>Format salah! Gunakan .autobc [query] - [value]</i></b>")
     cmd, value = parse_autobc_args(message)
 
     if cmd == "on":
         db_status = await get_vars(client.me.id, "AUTOBCAST")
         if AG.get(client.me.id, {}).get("status") or db_status == "on":
-            return await msg.edit("<b><i>⚡ Auto Broadcast diaktifkan. ✨</i></b>")
+            return await message.reply("<b><i>⚡ Auto Broadcast diaktifkan. ✨</i></b>")
 
         if not await get_vars(client.me.id, "DELAY_GCAST"):
             await set_vars(client.me.id, "DELAY_GCAST", "60")
