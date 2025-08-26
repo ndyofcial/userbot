@@ -101,7 +101,7 @@ async def _(client, message):
     if cmd == "on":
         db_status = await get_vars(client.me.id, "AUTOBCAST")
         if AG.get(client.me.id, {}).get("status") or db_status == "on":
-            return await message.reply("<b><i>⚡ Auto Broadcast diaktifkan. ✨</i></b>")
+            return await message.edit_text("<b><i>⚡ Auto Broadcast sudah aktif.</i></b>")
 
         if not await get_vars(client.me.id, "DELAY_GCAST"):
             await set_vars(client.me.id, "DELAY_GCAST", "60")
@@ -109,13 +109,13 @@ async def _(client, message):
             await set_vars(client.me.id, "PER_GROUP_DELAY", "3")
 
         await set_vars(client.me.id, "AUTOBCAST", "on")
-        await msg.edit("<b><i>⚡ Auto Broadcast diaktifkan.</i></b>")
+        await message.edit_text("<b><i>⚡ Auto Broadcast diaktifkan.</i></b>")
         asyncio.create_task(run_autobc(client))
 
     elif cmd == "off":
         AG[client.me.id] = {"status": False, "round": AG.get(client.me.id, {}).get("round", 0)}
         await set_vars(client.me.id, "AUTOBCAST", "off")
-        return await msg.edit("<b><i>⛔ Auto Broadcast dihentikan.</i></b>")
+        return await message.edit_text("<b><i>⛔ Auto Broadcast dihentikan.</i></b>")
 
     elif cmd == "status":
         db_status = await get_vars(client.me.id, "AUTOBCAST")
@@ -141,26 +141,26 @@ async def _(client, message):
 
 </details>
 """
-        return await msg.edit(teks, disable_web_page_preview=True)
+        return await message.edit_text(teks, disable_web_page_preview=True)
 
     elif cmd == "delay":
         if not value.isdigit():
-            return await msg.edit("<b><i>⛔ Format salah! Gunakan <code>.autobc delay [menit]</code></i></b>")
+            return await message.edit_text("<b><i>⛔ Format salah! Gunakan <code>.autobc delay [menit]</code></i></b>")
         await set_vars(client.me.id, "DELAY_GCAST", value)
-        return await msg.edit(f"<b><i>😐 Delay antar putaran diatur ke {value} menit.</i></b>")
+        return await message.edit_text(f"<b><i>😐 Delay antar putaran diatur ke {value} menit.</i></b>")
 
     elif cmd == "perdelay":
         if not value.isdigit():
-            return await msg.edit("<b><i>⛔ Format salah! Gunakan <code>.autobc perdelay [detik]</code></i></b>")
+            return await message.edit_text("<b><i>⛔ Format salah! Gunakan <code>.autobc perdelay [detik]</code></i></b>")
         val = int(value)
         if val < 3:
-            return await msg.edit("<b><i>⛔ Minimal delay per grup adalah 3 detik.</i></b>")
+            return await message.edit_text("<b><i>⛔ Minimal delay per grup adalah 3 detik.</i></b>")
         await set_vars(client.me.id, "PER_GROUP_DELAY", str(val))
-        return await msg.edit(f"<b><i>😐 Delay per grup diatur ke {val} detik.</i></b>")
+        return await message.edit_text(f"<b><i>😐 Delay per grup diatur ke {val} detik.</i></b>")
 
     elif cmd == "save":
         if not message.reply_to_message:
-            return await msg.edit("<b><i>⛔ Harap reply ke pesan yang ingin disimpan.</i></b>")
+            return await message.edit_text("<b><i>⛔ Harap reply ke pesan yang ingin disimpan.</i></b>")
 
         auto_texts = await get_auto_text(client.me.id)
         if auto_texts:
@@ -169,7 +169,7 @@ async def _(client, message):
 
         saved_msg = await message.reply_to_message.copy("me")
         await add_auto_text(client.me.id, saved_msg.id)
-        return await msg.edit(
+        return await message.edit_text(
             f"<b><i>✅ Pesan baru berhasil disimpan. ID <code>{saved_msg.id}</code></i></b>\n"
             f"<b><i>⚠️ Pesan lama otomatis dihapus.</i></b>"
         )
@@ -177,20 +177,20 @@ async def _(client, message):
     elif cmd == "list":
         auto_texts = await get_auto_text(client.me.id)
         if not auto_texts:
-            return await msg.edit("<b><i>💤 Tidak ada pesan tersimpan.</i></b>")
+            return await message.edit_text("<b><i>💤 Tidak ada pesan tersimpan.</i></b>")
         teks = f"📌 ID Pesan Aktif: <code>{auto_texts[0]}</code>"
-        return await msg.edit(f"<b><i>⚡️ Pesan AutoBC Saat Ini:</i></b>\n\n{teks}")
+        return await message.edit_text(f"<b><i>⚡️ Pesan AutoBC Saat Ini:</i></b>\n\n{teks}")
 
     elif cmd == "remove":
         auto_texts = await get_auto_text(client.me.id)
         if not auto_texts:
-            return await msg.edit("<b><i>💤 Tidak ada pesan tersimpan.</i></b>")
+            return await message.edit_text("<b><i>💤 Tidak ada pesan tersimpan.</i></b>")
         removed = auto_texts[0]
         await remove_auto_text(client.me.id, 0)
-        return await msg.edit(f"<b><i>⚙️ Pesan dengan ID <code>{removed}</code> berhasil dihapus.</i></b>")
+        return await message.edit_text(f"<b><i>⚙️ Pesan dengan ID <code>{removed}</code> berhasil dihapus.</i></b>")
 
     else:
-        return await msg.edit(f"<b><i>⚠️ Format salah! Gunakan .autobc [query] - [value]</i></b>")
+        return await message.edit_text(f"<b><i>⚠️ Format salah! Gunakan .autobc [query] - [value]</i></b>")
 
 # ======================
 # Auto Resume on start
