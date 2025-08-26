@@ -148,19 +148,7 @@ async def _(client, callback_query):
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(buttons),
         )
-    else:
-        buttons = [[InlineKeyboardButton("⦪ ʟᴀɴᴊᴜᴛᴋᴀɴ ⦫", callback_data="add_ubot")]]
-        return await callback_query.edit_message_text(
-            """
-<blockquote><b>⎆ ᴜɴᴛᴜᴋ ᴍᴇᴍʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ sɪᴀᴘᴋᴀɴ ʙᴀʜᴀɴ ʙᴇʀɪᴋᴜᴛ
 
-    ⎆ <code>ᴘʜᴏɴᴇ_ɴᴜᴍʙᴇʀ</code>: ɴᴏᴍᴇʀ ʜᴘ ᴀᴋᴜɴ ᴛᴇʟᴇɢʀᴀᴍ
-
-⎆ ᴊɪᴋᴀ sᴜᴅᴀʜ ᴛᴇʀsᴇᴅɪᴀ sɪʟᴀʜᴋᴀɴ ᴋʟɪᴋ ᴛᴏᴍʙᴏɪ ᴅɪʙᴀᴡᴀʜ</b></blockquote>
-""",
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(buttons),
-        )
 
 @PY.CALLBACK("bayar_dulu")
 async def _(client, callback_query):
@@ -202,7 +190,7 @@ async def _(client, callback_query):
     if not phone.contact or not phone.contact.phone_number:
         return await bot.send_message(
             user_id,
-            "⛔ Harap kirim nomor dengan klik tombol, bukan ketik manual."
+        "<blockquote><b>Silahkan klik tombol 📞 Kontak Saya untuk mengirimkan Nomor Telepon Telegram Anda.</b></blockquote>"
         )
 
     phone_number = phone.contact.phone_number
