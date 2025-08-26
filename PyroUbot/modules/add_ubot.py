@@ -14,13 +14,24 @@ from PyroUbot import *
 @PY.START
 @PY.PRIVATE
 async def _(client, message):
-    # Membuat tombol keyboard (Reply Keyboard)
-    buttons = [
-        [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫"), KeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫")],
-        [KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫"), KeyboardButton("⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫")],
-        [KeyboardButton("⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼"), KeyboardButton("⳹ ᴏᴡɴᴇʀ ⳼")],
-        [KeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫")]
-    ]
+    user_id = message.from_user.id
+
+    if user_id != OWNER_ID:
+        # tombol untuk user biasa
+        buttons = [
+            [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫")],
+            [KeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")],
+            [KeyboardButton("⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼"), KeyboardButton("⳹ ᴏᴡɴᴇʀ ⳼")],
+            [KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼"), KeyboardButton("⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫")],
+            [KeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫")]
+        ]
+    else:
+        # tombol khusus owner
+        buttons = [
+            [KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")],
+            [KeyboardButton("⦪ ɢɪᴛᴘᴜʟʟ ⦫"), KeyboardButton("⦪ ʀᴇsᴛᴀʀᴛ ⦫")],
+            [KeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫")]
+        ]
 
     reply_markup = ReplyKeyboardMarkup(
         buttons,
@@ -30,8 +41,8 @@ async def _(client, message):
 
     msg = MSG.START(message)
     await message.reply_video(
-        "https://files.catbox.moe/axrb4w.mp4", 
-        caption=msg, 
+        "https://files.catbox.moe/axrb4w.mp4",
+        caption=msg,
         reply_markup=reply_markup
     )
 
