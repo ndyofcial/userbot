@@ -1,204 +1,504 @@
-import re
-from pykeyboard import InlineKeyboard
-from pyrogram.errors import MessageNotModified
-from pyrogram.types import (
-    InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle,
-    InputTextMessageContent, ReplyKeyboardMarkup, KeyboardButton
-)
-from pyromod.helpers import ikb
+import asyncio
+import importlib
+from datetime import datetime
+
+from pyrogram.enums import SentCodeType
+from pyrogram.errors import *
+from pyrogram.types import *
+from pyrogram.raw import functions
 
 from PyroUbot import *
 
 
-def detect_url_links(text):
-    link_pattern = r"(?:https?://)?(?:www\.)?[a-zA-Z0-9.-]+(?:\.[a-zA-Z]{2,})+(?:[/?]\S+)?"
-    return re.findall(link_pattern, text)
+@PY.BOT("start")
+@PY.START
+@PY.PRIVATE
+async def _(client, message):
+    buttons = BTN.START(message)
+    msg = MSG.START(message)
+    await message.reply_video("https://files.catbox.moe/axrb4w.mp4", caption=msg, reply_markup=InlineKeyboardMarkup(buttons))
 
 
-def detect_button_and_text(text):
-    button_matches = re.findall(r"\| ([^|]+) - ([^|]+) \|", text)
-    text_matches = re.search(r"(.*?) \|", text, re.DOTALL).group(1) if "|" in text else text
-    return button_matches, text_matches
-
-
-def create_inline_keyboard(text, user_id=False, is_back=False):
-    keyboard = []
-    button_matches, text_matches = detect_button_and_text(text)
-
-    prev_button_data = None
-    for button_text, button_data in button_matches:
-        data = (
-            button_data.split("#")[0]
-            if detect_url_links(button_data.split("#")[0])
-            else f"_gtnote {int(user_id.split('_')[0])}_{user_id.split('_')[1]} {button_data.split('#')[0]}"
+@PY.CALLBACK("bahan")
+async def _(client, callback_query):
+    user_id = callback_query.from_user.id
+    if user_id in ubot._get_my_id:
+        buttons = [
+            [InlineKeyboardButton("⦪ ʀᴇꜱᴛᴀʀᴛ ⦫", callback_data=f"ress_ubot")],
+            [InlineKeyboardButton("⦪ ᴋᴇᴍʙᴀʟɪ ⦫", callback_data=f"home {user_id}")],
+        ]
+        return await callback_query.edit_message_text(
+            f"""
+<blockquote><b>⌭ ᴀɴᴅᴀ ꜱᴜᴅᴀʜ ᴍᴇᴍʙᴜᴀᴛ ᴜꜱᴇʀʙᴏᴛ\n\n⌭ ᴊɪᴋᴀ ᴜꜱᴇʀʙᴏᴛ ᴀɴᴅᴀ ᴛɪᴅᴀᴋ ʙɪꜱᴀ ᴅɪɢᴜɴᴀᴋᴀɴ ꜱɪʟᴀʜᴋᴀɴ ᴛᴇᴋᴇɴ ᴛᴏᴍʙᴏʟ ʀᴇꜱᴛᴀʀᴛ ᴅɪ ᴀᴛᴀꜱ</b></blockquote>
+""",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
         )
-        cb_data = data if user_id else button_data.split("#")[0]
-
-        if "#" in button_data:
-            if prev_button_data:
-                if detect_url_links(cb_data):
-                    keyboard[-1].append(InlineKeyboardButton(button_text, url=cb_data))
-                else:
-                    keyboard[-1].append(InlineKeyboardButton(button_text, callback_data=cb_data))
-            else:
-                button_row = [InlineKeyboardButton(button_text, url=cb_data)] if detect_url_links(cb_data) else [InlineKeyboardButton(button_text, callback_data=cb_data)]
-                keyboard.append(button_row)
-        else:
-            button_row = [InlineKeyboardButton(button_text, url=cb_data)] if button_data.startswith("http") else [InlineKeyboardButton(button_text, callback_data=cb_data)]
-            keyboard.append(button_row)
-
-        prev_button_data = button_data
-
-    markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
-
-    if user_id and is_back:
-        markup.inline_keyboard.append([
-            InlineKeyboardButton("ᴋᴇᴍʙᴀʟɪ", f"_gtnote {int(user_id.split('_')[0])}_{user_id.split('_')[1]}")
-        ])
-
-    return markup, text_matches
-
-
-class BTN:
-    def ALIVE(get_id):
-        return [
-            [InlineKeyboardButton("ᴛᴜᴛᴜᴘ", callback_data=f"alv_cls {int(get_id[1])} {int(get_id[2])}")],
-            [InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help_back")]
+    elif len(ubot._ubot) + 1 > MAX_BOT:
+        buttons = [
+            [InlineKeyboardButton("ᴋᴇᴍʙᴀʟɪ", callback_data=f"home {user_id}")],
         ]
+        return await callback_query.edit_message_text(
+            f"""
+<blockquote><b><b>☫ ᴛɪᴅᴀᴋ ʙɪsᴀ ᴍᴇᴍʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ!</b>
 
-    def BOT_HELP(message):
-        return [
-            [InlineKeyboardButton("ʀᴇsᴛᴀʀᴛ", callback_data="reboot")],
-            [InlineKeyboardButton("ꜱʏꜱᴛᴇᴍ", callback_data="system")],
-            [InlineKeyboardButton("ᴜʙᴏᴛ", callback_data="ubot")],
-            [InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇ", callback_data="update")]
+<b>☫ ᴋᴀʀᴇɴᴀ ᴍᴀᴋsɪᴍᴀʟ ᴜsᴇʀʙᴏᴛ ᴀᴅᴀʟᴀʜ {Fonts.smallcap(str(len(ubot._ubot)))} ᴛᴇʟᴀʜ ᴛᴇʀᴄᴀᴘᴀɪ</b>
+
+<blockquote><b>☫ sɪʟᴀʜᴋᴀɴ ʜᴜʙᴜɴɢɪ owner</b></blockquote>
+""",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
+    premium_users, ultra_premium_users = await get_list_from_vars(client.me.id, "PREM_USERS"), await get_list_from_vars(client.me.id, "ULTRA_PREM")
+    if user_id not in premium_users and user_id not in ultra_premium_users:
+        buttons = [
+            [InlineKeyboardButton("⦪ ʟᴀɴᴊᴜᴛᴋᴀɴ ⦫", callback_data="bayar_dulu")],
+            [InlineKeyboardButton("⦪ ᴋᴇᴍʙᴀʟɪ ⦫", callback_data=f"home {user_id}")],
         ]
-
-    def ADD_EXP(user_id):
-        buttons = InlineKeyboard(row_width=3)
-        keyboard = [
-            InlineKeyboardButton(f"{X} ʙᴜʟᴀɴ ", callback_data=f"success {user_id} {X}") for X in range(1, 13)
-        ]
-        buttons.add(*keyboard)
-        buttons.row(InlineKeyboardButton("⦪ ᴅᴀᴘᴀᴛᴋᴀɴ ᴘʀᴏfɪʟ ⦫", callback_data=f"profil {user_id}"))
-        buttons.row(InlineKeyboardButton("⦪ ᴛᴏʟᴀᴋ ᴘᴇᴍʙᴀʏᴀʀᴀɴ ⦫", callback_data=f"failed {user_id}"))
-        return buttons
-
-    def EXP_UBOT():
-        return [[InlineKeyboardButton("beli userbot", callback_data="bahan")]]
-
-    def PLUS_MINUS(query, user_id):
-        return [
-            [
-                InlineKeyboardButton("-1", callback_data=f"kurang {query}"),
-                InlineKeyboardButton("+1", callback_data=f"tambah {query}")
-            ],
-            [InlineKeyboardButton("⦪ ᴋᴏɴꜰɪʀᴍᴀsɪ ⦫", callback_data="confirm")],
-            [InlineKeyboardButton("⦪ ʙᴀᴛᴀʟᴋᴀɴ ⦫", callback_data=f"home {user_id}")]
-        ]
-
-    def UBOT(user_id, count):
-        return [
-            [InlineKeyboardButton("⦪ ʜᴀᴘᴜs ᴅᴀʀɪ ᴅᴀᴛᴀʙᴀsᴇ ⦫", callback_data=f"del_ubot {int(user_id)}")],
-            [InlineKeyboardButton("⦪ ᴄᴇᴋ ᴍᴀsᴀ ᴀᴋᴛɪғ ⦫", callback_data=f"cek_masa_aktif {int(user_id)}")],
-            [
-                InlineKeyboardButton("⟢", callback_data=f"p_ub {int(count)}"),
-                InlineKeyboardButton("⟣", callback_data=f"n_ub {int(count)}"),
-            ]
-        ]
-
-    def DEAK(user_id, count):
-        return [
-            [
-                InlineKeyboardButton("⦪ ᴋᴇᴍʙᴀʟɪ ⦫", callback_data=f"p_ub {int(count)}"),
-                InlineKeyboardButton("⦪ sᴇᴛᴜᴊᴜɪ ⦫", callback_data=f"deak_akun {int(count)}"),
-            ]
-        ]
-
-
-def START_KEYBOARD(user_id):
-    if user_id != OWNER_ID:
-        button = [
-            [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫")],
-            [KeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")],
-            [KeyboardButton("⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼"), KeyboardButton("⳹ ᴏᴡɴᴇʀ ⳼")],
-            [KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫")],
-            [KeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫")]
-        ]
-    else:  # kalau user = OWNER_ID
-        button = [
-            [KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")],
-            [KeyboardButton("⦪ ɢɪᴛᴘᴜʟʟ ⦫"), KeyboardButton("⦪ ʀᴇsᴛᴀʀᴛ ⦫")],
-            [KeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫")]
-        ]
-    return ReplyKeyboardMarkup(button, resize_keyboard=True)
-
-
-class INLINE:
-    def QUERY(func):
-        async def wrapper(client, inline_query):
-            users = ubot._get_my_id
-            if inline_query.from_user.id not in users:
-                await client.answer_inline_query(
-                    inline_query.id,
-                    cache_time=1,
-                    results=[
-                        InlineQueryResultArticle(
-                            title=f"ᴀɴᴅᴀ ʙᴇʟᴜᴍ ᴏʀᴅᴇʀ @{bot.me.username}",
-                            input_message_content=InputTextMessageContent(
-                                f"sɪʟᴀʜᴋᴀɴ ᴏʀᴅᴇʀ ᴅɪ @{bot.me.username} ᴅᴜʟᴜ ʙɪᴀʀ ʙɪsᴀ ᴍᴇɴɢɢᴜɴᴀᴋᴀɴ ɪɴʟɪɴᴇ ɪɴɪ"
-                            ),
-                        )
-                    ],
-                )
-            else:
-                await func(client, inline_query)
-        return wrapper
-
-    def DATA(func):
-        async def wrapper(client, callback_query):
-            users = ubot._get_my_id
-            if callback_query.from_user.id not in users:
-                await callback_query.answer(
-                    f"ᴍᴀᴋᴀɴʏᴀ ᴏʀᴅᴇʀ ᴜsᴇʀʙᴏᴛ @{bot.me.username} ᴅᴜʟᴜ ʙɪᴀʀ ʙɪsᴀ ᴋʟɪᴋ ᴛᴏᴍʙᴏʟ ɪɴɪ",
-                    True,
-                )
-            else:
-                try:
-                    await func(client, callback_query)
-                except MessageNotModified:
-                    await callback_query.answer("❌ ERROR")
-        return wrapper
-
-
-async def create_button(m):
-    buttons = InlineKeyboard(row_width=1)
-    keyboard = []
-    msg = []
-    if "-/" not in m.text.split(None, 1)[1]:
-        for X in m.text.split(None, 1)[1].split():
-            X_parts = X.split(":", 1)
-            keyboard.append(InlineKeyboardButton(X_parts[0].replace("_", " "), url=X_parts[1]))
-            msg.append(X_parts[0])
-        buttons.add(*keyboard)
-        text = m.reply_to_message.text if m.reply_to_message else " ".join(msg)
+        return await callback_query.edit_message_text(
+            MSG.POLICY(),
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
     else:
-        for X in m.text.split("-/", 1)[1].split():
-            X_parts = X.split(":", 1)
-            keyboard.append(InlineKeyboardButton(X_parts[0].replace("_", " "), url=X_parts[1]))
-        buttons.add(*keyboard)
-        text = m.text.split("-/", 1)[0].split(None, 1)[1]
-    return buttons, text
+        buttons = [[InlineKeyboardButton("⦪ ʟᴀɴᴊᴜᴛᴋᴀɴ ⦫", callback_data="add_ubot")]]
+        return await callback_query.edit_message_text(
+            """
+<blockquote><b>⌭ ᴀɴᴅᴀ ᴛᴇʟᴀʜ ᴍᴇᴍʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ꜱɪʟᴀʜᴋᴀɴ ᴘᴇɴᴄᴇᴛ ᴛᴏᴍʙᴏʟ ʟᴀɴᴊᴜᴛᴋᴀɴ ᴜɴᴛᴜᴋ ᴍᴇᴍʙᴜᴀᴛ ᴜꜱᴇʀʙᴏᴛ</b></blockquote>
+""",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
 
 
-async def notes_create_button(text):
-    buttons = InlineKeyboard(row_width=2)
-    keyboard = []
-    split_text = text.split("-/", 1)
-    for X in split_text[1].split():
-        split_X = X.split(":", 1)
-        button_text = split_X[0].replace("_", " ")
-        button_url = split_X[1]
-        keyboard.append(InlineKeyboardButton(button_text, url=button_url))
-    buttons.add(*keyboard)
-    return buttons, split_text[0]
+@PY.CALLBACK("status")
+async def _(client, callback_query):
+    user_id = callback_query.from_user.id
+    if user_id in ubot._get_my_id:
+        buttons = [
+            [InlineKeyboardButton("ᴋᴇᴍʙᴀʟɪ", callback_data=f"home {user_id}")],
+        ]
+        exp = await get_expired_date(user_id)
+        prefix = await get_pref(user_id)
+        waktu = exp.strftime("%d-%m-%Y") if exp else "None"
+        return await callback_query.edit_message_text(
+            f"""
+<blockquote>⌬ ᴜꜱᴇʀʙᴏᴛ ᴘʀᴇᴍɪᴜᴍ
+  ᚗ ꜱᴛᴀᴛᴜꜱ : ᴘʀᴇᴍɪᴜᴍ
+  ᚗ ᴘʀᴇꜰɪxᴇꜱ : {prefix[0]}
+  ᚗ ᴇxᴘɪʀᴇᴅ_ᴏɴ : {waktu}</b></blockquote>
+""",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
+    else:
+        buttons = [
+            [InlineKeyboardButton("✮ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ✮", callback_data=f"bahan")],
+            [InlineKeyboardButton("⦪ ᴋᴇᴍʙᴀʟɪ ⦫", callback_data=f"home {user_id}")],
+        ]
+        return await callback_query.edit_message_text(
+            f"""
+<blockquote><b>☫ ᴍᴀᴀꜰ ᴀɴᴅᴀ ʙᴇʟᴜᴍ ᴍᴇᴍʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ, ꜱɪʟᴀᴋᴀɴ ᴍᴇᴍʙᴇʟɪ ᴛᴇʀʟᴇʙɪʜ ᴅᴀʜᴜʟᴜ.</b></blockquote>
+""",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
+    )
+
+
+@PY.CALLBACK("buat_ubot")
+async def _(client, callback_query):
+    user_id = callback_query.from_user.id
+    if user_id in ubot._get_my_id:
+        buttons = [
+            [InlineKeyboardButton("⦪ ʀᴇꜱᴛᴀʀᴛ ⦫", callback_data=f"ress_ubot")],
+            [InlineKeyboardButton("⦪ ᴋᴇᴍʙᴀʟɪ ⦫", callback_data=f"home {user_id}")],
+        ]
+        return await callback_query.edit_message_text(
+            f"""
+<blockquote><b>⌭ ᴀɴᴅᴀ ꜱᴜᴅᴀʜ ᴍᴇᴍʙᴜᴀᴛ ᴜꜱᴇʀʙᴏᴛ\n\n⌭ ᴊɪᴋᴀ ᴜꜱᴇʀʙᴏᴛ ᴀɴᴅᴀ ᴛɪᴅᴀᴋ ʙɪꜱᴀ ᴅɪɢᴜɴᴀᴋᴀɴ ꜱɪʟᴀʜᴋᴀɴ ᴛᴇᴋᴇɴ ᴛᴏᴍʙᴏʟ ʀᴇꜱᴛᴀʀᴛ ᴅɪ ᴀᴛᴀꜱ</b></blockquote>
+""",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
+    elif len(ubot._ubot) + 1 > MAX_BOT:
+        buttons = [
+            [InlineKeyboardButton("ᴋᴇᴍʙᴀʟɪ", callback_data=f"home {user_id}")],
+        ]
+        return await callback_query.edit_message_text(
+            f"""
+<blockquote><b><b>⌬ ᴛɪᴅᴀᴋ ʙɪsᴀ ᴍᴇᴍʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ!</b>
+
+<b>⌬ ᴋᴀʀᴇɴᴀ ᴍᴀᴋsɪᴍᴀʟ ᴜsᴇʀʙᴏᴛ ᴀᴅᴀʟᴀʜ {Fonts.smallcap(str(len(ubot._ubot)))} ᴛᴇʟᴀʜ ᴛᴇʀᴄᴀᴘᴀɪ</b>
+
+<blockquote><b>⌬ sɪʟᴀʜᴋᴀɴ ʜᴜʙᴜɴɢɪ: ᴀᴅᴍɪɴ ᴊɪᴋᴀ ᴍᴀᴜ ᴅɪʙᴜᴀᴛᴋᴀɴ ʙᴏᴛ sᴇᴘᴇʀᴛɪ sᴀʏᴀ </b></blockquote>
+""",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
+    premium_users, ultra_premium_users = await get_list_from_vars(client.me.id, "PREM_USERS"), await get_list_from_vars(client.me.id, "ULTRA_PREM")
+    if user_id not in premium_users and user_id not in ultra_premium_users:
+        buttons = [
+            [InlineKeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫", callback_data="bahan")],
+            [InlineKeyboardButton("⦪ ᴋᴇᴍʙᴀʟɪ ⦫", callback_data=f"home {user_id}")],
+        ]
+        return await callback_query.edit_message_text(
+            f"""
+<blockquote><b>⌬ ᴍᴀᴀꜰ ᴀɴᴅᴀ ʙᴇʟᴜᴍ ᴍᴇᴍʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ, ꜱɪʟᴀᴋᴀɴ ᴍᴇᴍʙᴇʟɪ ᴛᴇʀʟᴇʙɪʜ ᴅᴀʜᴜʟᴜ</b></blockquote>
+""",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
+
+
+@PY.CALLBACK("bayar_dulu")
+async def _(client, callback_query):
+    user_id = callback_query.from_user.id
+    buttons = BTN.PLUS_MINUS(1, user_id)
+    return await callback_query.edit_message_text(
+        MSG.TEXT_PAYMENT(30, 30, 1),
+        disable_web_page_preview=True,
+        reply_markup=InlineKeyboardMarkup(buttons),
+    )
+
+
+@PY.CALLBACK("add_ubot")
+async def _(client, callback_query):
+    user_id = callback_query.from_user.id
+    await callback_query.message.delete()
+
+    # tombol share contact
+    keyboard = ReplyKeyboardMarkup(
+        [[KeyboardButton("📞Kontak Saya", request_contact=True)]],
+        resize_keyboard=True,
+        one_time_keyboard=True
+    )
+
+    msg = await bot.send_message(
+        user_id,
+        "<blockquote><b>Silahkan klik tombol 📞 Kontak Saya untuk mengirimkan Nomor Telepon Telegram Anda.</b></blockquote>",
+        reply_markup=keyboard
+    )
+
+    try:
+        phone = await bot.listen(user_id, timeout=300)  # tunggu kontak
+    except asyncio.TimeoutError:
+        return await bot.send_message(
+            user_id,
+            "<blockquote>⎆ Pem-batalan otomatis!\n⎆ Gunakan /start untuk memulai ulang</blockquote>"
+        )
+
+    if not phone.contact or not phone.contact.phone_number:
+        return await bot.send_message(
+            user_id,
+        "<blockquote><b>Silahkan klik tombol 📞 Kontak Saya untuk mengirimkan Nomor Telepon Telegram Anda.</b></blockquote>"
+        )
+
+    phone_number = phone.contact.phone_number
+    await msg.delete()
+
+    # Buat client baru
+    new_client = Ubot(
+        name=str(callback_query.id),
+        api_id=API_ID,
+        api_hash=API_HASH,
+        in_memory=False,
+    )
+
+    get_otp = await bot.send_message(user_id, "<blockquote><b>⎆ Mengirim kode OTP...</b></blockquote>")
+    await new_client.connect()
+
+    try:
+        code = await new_client.send_code(phone_number.strip())
+    except ApiIdInvalid as e:
+        await get_otp.delete()
+        return await bot.send_message(user_id, e)
+    except PhoneNumberInvalid as e:
+        await get_otp.delete()
+        return await bot.send_message(user_id, e)
+    except PhoneNumberFlood as e:
+        await get_otp.delete()
+        return await bot.send_message(user_id, e)
+    except PhoneNumberBanned as e:
+        await get_otp.delete()
+        return await bot.send_message(user_id, e)
+    except PhoneNumberUnoccupied as e:
+        await get_otp.delete()
+        return await bot.send_message(user_id, e)
+    except Exception as e:
+        await get_otp.delete()
+        return await bot.send_message(user_id, f"ERROR: {e}")
+
+    try:
+        sent_code = {
+            SentCodeType.APP: "<a href=tg://openmessage?user_id=777000>akun Telegram resmi</a>",
+            SentCodeType.SMS: "SMS Anda",
+            SentCodeType.CALL: "panggilan telepon",
+            SentCodeType.FLASH_CALL: "panggilan kilat",
+            SentCodeType.FRAGMENT_SMS: "fragment SMS",
+            SentCodeType.EMAIL_CODE: "email Anda",
+        }
+        await get_otp.delete()
+        otp = await bot.ask(
+            user_id,
+            (
+                "<blockquote><b>Silakan Periksa Kode OTP dari <a href='tg://openmessage?user_id=777000'>Akun Telegram Resmi</a>. Kirim Kode OTP ke sini setelah membaca Format di bawah ini.\n"
+                "\nJika Kode OTP adalah 12345 Tolong [ TAMBAHKAN SPASI ] kirimkan Seperti ini 1 2 3 4 5.</b></blockquote>"
+            ),
+            timeout=300,
+        )
+    except asyncio.TimeoutError:
+        return await bot.send_message(user_id, "<blockquote>⎆ Pem-batalan otomatis!\n⎆ Gunakan /start untuk memulai ulang</blockquote>")
+
+    if await is_cancel(callback_query, otp.text):
+        return
+
+    otp_code = otp.text
+    try:
+        await new_client.sign_in(
+            phone_number.strip(),
+            code.phone_code_hash,
+            phone_code=" ".join(str(otp_code)),
+        )
+    except PhoneCodeInvalid as e:
+        return await bot.send_message(user_id, e)
+    except PhoneCodeExpired as e:
+        return await bot.send_message(user_id, e)
+    except BadRequest as e:
+        return await bot.send_message(user_id, f"ERROR: {e}")
+    except SessionPasswordNeeded:
+        try:
+            two_step_code = await bot.ask(
+                user_id,
+                "⎆ Akun Anda mengaktifkan verifikasi dua langkah. Kirim password Anda.\n\nGunakan /cancel untuk batal.",
+                timeout=300,
+            )
+        except asyncio.TimeoutError:
+            return await bot.send_message(user_id, "<blockquote>⎆ Pem-batalan otomatis!\n⎆ Gunakan /start untuk memulai ulang</blockquote>")
+
+        if await is_cancel(callback_query, two_step_code.text):
+            return
+
+        try:
+            await new_client.check_password(two_step_code.text)
+        except Exception as e:
+            return await bot.send_message(user_id, f"ERROR: {e}")
+
+    # simpan session
+    session_string = await new_client.export_session_string()
+    await new_client.disconnect()
+    new_client.storage.session_string = session_string
+    new_client.in_memory = False
+
+    bot_msg = await bot.send_message(
+        user_id,
+        "⎆ Sedang memproses....\n\nMohon tunggu sebentar.",
+        disable_web_page_preview=True,
+    )
+
+    await new_client.start()
+    if not user_id == new_client.me.id:
+        ubot._ubot.remove(new_client)
+        return await bot_msg.edit(
+            "<b>⎆ Harap gunakan nomor Telegram Anda sendiri, bukan akun lain.</b>"
+        )
+
+    await add_ubot(
+        user_id=int(new_client.me.id),
+        api_id=API_ID,
+        api_hash=API_HASH,
+        session_string=session_string,
+    )
+
+    for mod in loadModule():
+        importlib.reload(importlib.import_module(f"PyroUbot.modules.{mod}"))
+
+    SH = await ubot.get_prefix(new_client.me.id)
+    buttons = [[InlineKeyboardButton("ᴋᴇᴍʙᴀʟɪ", callback_data=f"home {user_id}")]]
+    text_done = f"""
+<blockquote><b>⎆ Berhasil diaktifkan
+• Nama : <a href=tg://user?id={new_client.me.id}>{new_client.me.first_name} {new_client.me.last_name or ''}</a>
+• ID : {new_client.me.id}
+• Prefixes : {' '.join(SH)}
+⌭ Hubungi admin untuk info terbaru
+Jika bot tidak respon, ketik /restart</b></blockquote>
+    """
+    await bot_msg.edit(text_done, disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup(buttons))
+
+    await bash("rm -rf *session*")
+    await install_my_peer(new_client)
+
+    try:
+        await new_client.join_chat("rompublicvin2")
+        await new_client.join_chat("averixnotif")
+        await new_client.join_chat("ndytestimoni3")
+        await new_client.join_chat("roomndy1")
+        await new_client.join_chat("roomndy2")
+    except UserAlreadyParticipant:
+        pass
+
+    return await bot.send_message(
+        LOGS_MAKER_UBOT,
+        f"""
+<b>⌬ Userbot Diaktifkan</b>
+<b> ├ Akun:</b> <a href=tg://user?id={new_client.me.id}>{new_client.me.first_name} {new_client.me.last_name or ''}</a> 
+<b> ╰ ID:</b> <code>{new_client.me.id}</code>
+""",
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("⦪ Cek Masa Aktif ⦫", callback_data=f"cek_masa_aktif {new_client.me.id}")]]
+        ),
+        disable_web_page_preview=True,
+    )
+
+async def is_cancel(callback_query, text):
+    if text.startswith("/cancel"):
+        await bot.send_message(
+            callback_query.from_user.id, "<blockquote>⎆ ᴘᴇᴍʙᴀᴛᴀʟᴀɴ ᴏᴛᴏᴍᴀᴛɪꜱ!\n⎆ɢᴜɴᴀᴋᴀɴ /ꜱᴛᴀʀᴛ ᴜɴᴛᴜᴋ ᴍᴇᴍᴜʟᴀɪ ᴜʟᴀɴɢ</blockquote>"
+        )
+        return True
+    return False
+
+
+@PY.BOT("control")
+async def _(client, message):
+    buttons = [
+            [InlineKeyboardButton("ʀᴇꜱᴛᴀʀᴛ", callback_data=f"ress_ubot")],
+        ]
+    await message.reply(
+            f"""
+<blockquote><b>⎆ ᴀɴᴅᴀ ᴀᴋᴀɴ ᴍᴇʟᴀᴋᴜᴋᴀɴ ʀᴇꜱᴛᴀʀᴛ?!\n⎆ ᴊɪᴋᴀ ɪʏᴀ ᴘᴇɴᴄᴇᴛ ᴛᴏᴍʙᴏʟ ᴅɪ ʙᴀᴡᴀʜ ɪɴɪ</b></blockquote>
+""",
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
+
+@PY.CALLBACK("ress_ubot")
+async def _(client, callback_query):
+    if callback_query.from_user.id not in ubot._get_my_id:
+        return await callback_query.answer(
+            f"you don't have acces",
+            True,
+        )
+    for X in ubot._ubot:
+        if callback_query.from_user.id == X.me.id:
+            for _ubot_ in await get_userbots():
+                if X.me.id == int(_ubot_["name"]):
+                    try:
+                        ubot._ubot.remove(X)
+                        ubot._get_my_id.remove(X.me.id)
+                        UB = Ubot(**_ubot_)
+                        await UB.start()
+                        for mod in loadModule():
+                            importlib.reload(
+                                importlib.import_module(f"PyroUbot.modules.{mod}")
+                            )
+                        return await callback_query.edit_message_text(
+                            f"⎆ ʀᴇꜱᴛᴀʀᴛ ʙᴇʀʜᴀꜱɪʟ ᴅɪʟᴀᴋᴜᴋᴀɴ !\n\n ⎆ ɴᴀᴍᴇ: {UB.me.first_name} {UB.me.last_name or ''} | {UB.me.id}"
+                        )
+                    except Exception as error:
+                        return await callback_query.edit_message_text(f"{error}")
+
+@PY.BOT("restart")
+async def _(client, message):
+    msg = await message.reply("<b>⎆ ᴛᴜɴɢɢᴜ sᴇʙᴇɴᴛᴀʀ</b>")
+    if message.from_user.id not in ubot._get_my_id:
+        return await msg.edit(
+            f"you don't have acces",
+            True,
+        )
+    for X in ubot._ubot:
+        if message.from_user.id == X.me.id:
+            for _ubot_ in await get_userbots():
+                if X.me.id == int(_ubot_["name"]):
+                    try:
+                        ubot._ubot.remove(X)
+                        ubot._get_my_id.remove(X.me.id)
+                        UB = Ubot(**_ubot_)
+                        await UB.start()
+                        for mod in loadModule():
+                            importlib.reload(
+                                importlib.import_module(f"PyroUbot.modules.{mod}")
+                            )
+                        return await msg.edit(
+                            f"⎆ ʀᴇꜱᴛᴀʀᴛ ʙᴇʀʜᴀꜱɪʟ ᴅɪʟᴀᴋᴜᴋᴀɴ !\n\n ⎆ ɴᴀᴍᴇ: {UB.me.first_name} {UB.me.last_name or ''} | `{UB.me.id}`"
+                        )
+                    except Exception as error:
+                        return await msg.edit(f"{error}")
+
+@PY.CALLBACK("cek_ubot")
+@PY.BOT("getubot")
+@PY.ADMIN
+async def _(client, callback_query):
+    await bot.send_message(
+        callback_query.from_user.id,
+        await MSG.UBOT(0),
+        reply_markup=InlineKeyboardMarkup(BTN.UBOT(ubot._ubot[0].me.id, 0)),
+    )
+
+@PY.CALLBACK("cek_masa_aktif")
+async def _(client, callback_query):
+    user_id = int(callback_query.data.split()[1])
+    expired = await get_expired_date(user_id)
+    try:
+        xxxx = (expired - datetime.now()).days
+        return await callback_query.answer(f"⎆ ᴛɪɴɢɢᴀʟ {xxxx} ʜᴀʀɪ ʟᴀɢɪ", True)
+    except:
+        return await callback_query.answer("⎆ sᴜᴅᴀʜ ᴛɪᴅᴀᴋ ᴀᴋᴛɪғ", True)
+
+@PY.CALLBACK("del_ubot")
+async def _(client, callback_query):
+    user_id = callback_query.from_user.id
+    if user_id not in await get_list_from_vars(client.me.id, "ADMIN_USERS"):
+        return await callback_query.answer(
+            f"❌ ᴛᴏᴍʙᴏʟ ɪɴɪ ʙᴜᴋᴀɴ ᴜɴᴛᴜᴋ ᴍᴜ {callback_query.from_user.first_name} {callback_query.from_user.last_name or ''}",
+            True,
+        )
+    try:
+        show = await bot.get_users(callback_query.data.split()[1])
+        get_id = show.id
+        get_mention = f"{get_id}"
+    except Exception:
+        get_id = int(callback_query.data.split()[1])
+        get_mention = f"{get_id}"
+    for X in ubot._ubot:
+        if get_id == X.me.id:
+            await X.unblock_user(bot.me.username)
+            await remove_ubot(X.me.id)
+            ubot._get_my_id.remove(X.me.id)
+            ubot._ubot.remove(X)
+            await X.log_out()
+            await callback_query.answer(
+                f"⎆ {get_mention} ʙᴇʀʜᴀsɪʟ ᴅɪʜᴀᴘᴜs ᴅᴀʀɪ ᴅᴀᴛᴀʙᴀsᴇ", True
+            )
+            await callback_query.edit_message_text(
+                await MSG.UBOT(0),
+                reply_markup=InlineKeyboardMarkup(
+                    BTN.UBOT(ubot._ubot[0].me.id, 0)
+                ),
+            )
+            await bot.send_message(
+                X.me.id,
+                MSG.EXP_MSG_UBOT(X),
+                reply_markup=InlineKeyboardMarkup(BTN.EXP_UBOT()),
+            )
+
+    
+@PY.CALLBACK("^(p_ub|n_ub)")
+async def _(client, callback_query):
+    query = callback_query.data.split()
+    count = int(query[1])
+    if query[0] == "n_ub":
+        if count == len(ubot._ubot) - 1:
+            count = 0
+        else:
+            count += 1
+    elif query[0] == "p_ub":
+        if count == 0:
+            count = len(ubot._ubot) - 1
+        else:
+            count -= 1
+    await callback_query.edit_message_text(
+        await MSG.UBOT(count),
+        reply_markup=InlineKeyboardMarkup(
+            BTN.UBOT(ubot._ubot[count].me.id, count)
+        ),
+    )
