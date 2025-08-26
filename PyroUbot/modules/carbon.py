@@ -54,25 +54,17 @@ async def _(client, message):
         if "dibatasi" in teks_spambot or "restricted" in teks_spambot or "limit" in teks_spambot:
             # Akun kena limit → kirim isi asli dari SpamBot
             text = f"""
-<blockquote><b>⌭ {pong} Status Akun : LIMIT 🚫</b></blockquote>
-
-<blockquote>{status.text}</blockquote>
-
-<blockquote><b>⌭ {yubot} Ubot : {client.me.mention}</b></blockquote>
-
-<blockquote><b>ᣃ࿈ Userbot Premium ࿈ᣄ</b></blockquote>
+<b>⌭ {pong} Status Akun : LIMIT 🚫</b>
+{status.text}
+<b> ~ ⭐{client.me.mention}</b>
 """
         else:
             # Akun tidak kena limit
             text = f"""
 <blockquote><b>⌭ {pong} Status Akun : ✅ Tidak Dibatasi</b></blockquote>
-
-<blockquote>✅ Kabar baik, akun anda tidak dibatasi.
-Anda bebas, sebebas burung yang lepas.</blockquote>
-
-<blockquote><b>⌭ {yubot} Ubot : {client.me.mention}</b></blockquote>
-
-<blockquote><b>ᣃ࿈ Userbot Premium ࿈ᣄ</b></blockquote>
+✅ Kabar baik, akun anda tidak dibatasi.
+Anda bebas, sebebas burung yang lepas.
+<b> ~ ⭐{client.me.mention}</b>
 """
         await client.send_message(message.chat.id, text)
         # Hapus history SpamBot biar bersih
