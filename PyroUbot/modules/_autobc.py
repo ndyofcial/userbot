@@ -96,7 +96,7 @@ async def run_autobc(client):
 # ======================
 @PY.UBOT("autobc")
 async def _(client, message):
-    msg = await message.reply("<b><i>Format salah! Gunakan .autobc [query] - [value]</i></b>")
+    msg = await message.reply("<b><i>⚠️ Format salah! Gunakan .autobc [query] - [value]</i></b>")
     cmd, value = parse_autobc_args(message)
 
     if cmd == "on":
@@ -191,7 +191,7 @@ async def _(client, message):
         return await msg.edit(f"<b><i>⚙️ Pesan dengan ID <code>{removed}</code> berhasil dihapus.</i></b>")
 
 # ======================
-# Auto Resume on start
+# Auto Resume on startup
 # ======================
 async def resume_autobc(client):
     status = await get_vars(client.me.id, "AUTOBCAST")
@@ -218,8 +218,7 @@ async def resume_autobc(client):
         )
         asyncio.create_task(run_autobc(client))
 
-@PY.UBOT("start")
-async def start_handler(client, message):
+# Hook langsung pas ubot aktif
+@PY.ON("ready")
+async def _(client):
     await resume_autobc(client)
-    return await message.reply("✅ Bot sudah berjalan.")
-
