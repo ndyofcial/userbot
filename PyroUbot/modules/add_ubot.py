@@ -14,9 +14,26 @@ from PyroUbot import *
 @PY.START
 @PY.PRIVATE
 async def _(client, message):
-    buttons = BTN.START(message)
+    # Membuat tombol keyboard (Reply Keyboard)
+    buttons = [
+        [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫"), KeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫")],
+        [KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫"), KeyboardButton("⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫")],
+        [KeyboardButton("⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼"), KeyboardButton("⳹ ᴏᴡɴᴇʀ ⳼")],
+        [KeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫")]
+    ]
+
+    reply_markup = ReplyKeyboardMarkup(
+        buttons,
+        resize_keyboard=True,  # tombol menyesuaikan ukuran
+        one_time_keyboard=True # tombol hilang setelah ditekan
+    )
+
     msg = MSG.START(message)
-    await message.reply_video("https://files.catbox.moe/axrb4w.mp4", caption=msg, reply_markup=InlineKeyboardMarkup(buttons))
+    await message.reply_video(
+        "https://files.catbox.moe/axrb4w.mp4", 
+        caption=msg, 
+        reply_markup=reply_markup
+    )
 
 
 @PY.CALLBACK("bahan")
