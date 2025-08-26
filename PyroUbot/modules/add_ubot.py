@@ -9,67 +9,14 @@ from pyrogram.raw import functions
 
 from PyroUbot import *
 
-# =================== START HANDLER =================== #
+
 @PY.BOT("start")
 @PY.START
 @PY.PRIVATE
 async def _(client, message):
-    user_id = message.from_user.id
-
-    if user_id != OWNER_ID:
-        buttons = [
-            [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫")],
-            [KeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")],
-            [KeyboardButton("⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼"), KeyboardButton("⳹ ᴏᴡɴᴇʀ ⳼")],
-            [KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼"), KeyboardButton("⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫")],
-            [KeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫"), KeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫")]
-        ]
-    else:
-        buttons = [
-            [KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫"), KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")],
-            [KeyboardButton("⦪ ɢɪᴛᴘᴜʟʟ ⦫"), KeyboardButton("⦪ ʀᴇsᴛᴀʀᴛ ⦫")],
-            [KeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫")]
-        ]
-
-    reply_markup = ReplyKeyboardMarkup(buttons, resize_keyboard=True, one_time_keyboard=False)
+    buttons = BTN.START(message)
     msg = MSG.START(message)
-    await message.reply_video("https://files.catbox.moe/axrb4w.mp4", caption=msg, reply_markup=reply_markup)
-
-# =================== REPLY KEYBOARD HANDLER =================== #
-@PY.BOT("text")
-async def handle_text(client, message):
-    text = message.text
-    user_id = message.from_user.id
-
-    if text == "⦪ ᴛʀɪᴀʟ ⦫":
-        await message.reply("Menjalankan TRIAL...")
-    elif text == "⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫":
-        await message.reply("Menjalankan BELI USERBOT...")
-    elif text == "⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫":
-        await message.reply("Menjalankan RESET PREFIX...")
-    elif text == "⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼":
-        await message.reply("Link repo: t.me/moire_marketx")
-    elif text == "⳹ ᴏᴡɴᴇʀ ⳼":
-        await message.reply("Link owner: t.me/moire_mor")
-    elif text in ["⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼", "⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫"]:
-        await message.reply("Menjalankan BUAT USERBOT...")
-    elif text == "⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫":
-        await message.reply("Menjalankan HELP MENU...")
-    elif text == "⦪ sᴜᴘᴘᴏʀᴛ ⦫":
-        await message.reply("Menjalankan SUPPORT...")
-    elif text == "⦪ ɢɪᴛᴘᴜʟʟ ⦫":
-        await message.reply("Menjalankan GITPULL...")
-    elif text == "⦪ ʀᴇsᴛᴀʀᴛ ⦫":
-        await message.reply("Menjalankan RESTART...")
-
-    if text == "⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫":
-        if not ubot._ubot:
-            return await message.reply("<b>⎆ Belum ada userbot terdaftar.</b>")
-        
-        index = 0
-        ubot_text = await MSG.UBOT(index)
-        markup = InlineKeyboardMarkup(BTN.UBOT(ubot._ubot[index].me.id, index))
-        await message.reply(ubot_text, reply_markup=markup)
+    await message.reply_video("https://files.catbox.moe/axrb4w.mp4", caption=msg, reply_markup=InlineKeyboardMarkup(buttons))
 
 
 @PY.CALLBACK("bahan")
@@ -535,21 +482,23 @@ async def _(client, callback_query):
             )
 
     
-# =================== CALLBACK HANDLER FIXED =================== #
-@PY.CALLBACK("^(p_ub|n_ub)$")
-async def navigate_userbot(client, callback_query):
-    if not ubot._ubot:
-        return await callback_query.answer("⎆ Belum ada userbot aktif", True)
-
-    parts = callback_query.data.split()
-    action = parts[0]
-    index = int(parts[1]) if len(parts) > 1 else 0
-
-    if action == "n_ub":
-        index = (index + 1) % len(ubot._ubot)
-    elif action == "p_ub":
-        index = (index - 1) % len(ubot._ubot)
-
-    ubot_text = await MSG.UBOT(index)
-    markup = InlineKeyboardMarkup(BTN.UBOT(ubot._ubot[index].me.id, index))
-    await callback_query.edit_message_text(ubot_text, reply_markup=markup, disable_web_page_preview=True)
+@PY.CALLBACK("^(p_ub|n_ub)")
+async def _(client, callback_query):
+    query = callback_query.data.split()
+    count = int(query[1])
+    if query[0] == "n_ub":
+        if count == len(ubot._ubot) - 1:
+            count = 0
+        else:
+            count += 1
+    elif query[0] == "p_ub":
+        if count == 0:
+            count = len(ubot._ubot) - 1
+        else:
+            count -= 1
+    await callback_query.edit_message_text(
+        await MSG.UBOT(count),
+        reply_markup=InlineKeyboardMarkup(
+            BTN.UBOT(ubot._ubot[count].me.id, count)
+        ),
+    )
