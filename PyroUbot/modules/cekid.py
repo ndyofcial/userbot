@@ -20,6 +20,7 @@ __HELP__ = """
 </blockquote>
 """
 
+from pyrogram.enums import ChatType
 
 async def cekid_handler(client, message):
     user = message.from_user
