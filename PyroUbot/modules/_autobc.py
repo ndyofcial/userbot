@@ -125,16 +125,18 @@ async def _(client, message):
         next_bc = fmt_wib(AG.get(client.me.id, {}).get("next"))
 
         teks = f"""
-📎 <b>Auto Broadcast Status</b>:
+<details><summary><b>📎 Auto Broadcast Status</b></summary>
 
-👤 Status: {status}
-🏓 Pause Rotation: {delay_minutes} Min
-✉️ Save Messages: {len(auto_texts) if auto_texts else 0}
-⚙️ Total Rounds: {total_round} Times
-⏰ Last Broadcast: {last_bc}
-⚡️ Next Broadcast: {next_bc}
+👤 Status: {status}  
+🏓 Pause Rotation: {delay_minutes} Min  
+✉️ Save Messages: {len(auto_texts) if auto_texts else 0}  
+⚙️ Total Rounds: {total_round} Times  
+⏰ Last Broadcast: {last_bc}  
+⚡️ Next Broadcast: {next_bc}  
+
+</details>
 """
-        return await msg.edit(teks)
+        return await msg.edit(teks, disable_web_page_preview=True)
 
     elif cmd == "delay":
         if not value.isdigit():
@@ -155,13 +157,11 @@ async def _(client, message):
         if not message.reply_to_message:
             return await msg.edit("<b><i>⛔ Harap reply ke pesan yang ingin disimpan.</i></b>")
 
-        # Hapus semua pesan lama (agar hanya 1 pesan aktif)
         auto_texts = await get_auto_text(client.me.id)
         if auto_texts:
             for _ in range(len(auto_texts)):
                 await remove_auto_text(client.me.id, 0)
 
-        # Simpan pesan baru
         saved_msg = await message.reply_to_message.copy("me")
         await add_auto_text(client.me.id, saved_msg.id)
         return await msg.edit(
@@ -185,7 +185,7 @@ async def _(client, message):
         return await msg.edit(f"<b><i>⚙️ Pesan dengan ID <code>{removed}</code> berhasil dihapus.</i></b>")
 
     else:
-        return await msg.edit(f"<b><i>{stopb} Format salah! Gunakan .autobc [query] - [value]</i></b>")
+        return await msg.edit(f"<b><i>⚠️ Format salah! Gunakan .autobc [query] - [value]</i></b>")
 
 # ======================
 # Auto Resume on start
