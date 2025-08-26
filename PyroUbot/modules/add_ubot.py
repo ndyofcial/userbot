@@ -241,8 +241,8 @@ async def _(client, callback_query):
         otp = await bot.ask(
             user_id,
             (
-                "<b>Silakan Periksa Kode OTP dari <a href='tg://openmessage?user_id=777000'>Akun Telegram Resmi</a>. Kirim Kode OTP ke sini setelah membaca Format di bawah ini.</b>\n"
-                "\nJika Kode OTP adalah 12345 Tolong [ TAMBAHKAN SPASI ] kirimkan Seperti ini 1 2 3 4 5."
+                "<blockquote><b>Silakan Periksa Kode OTP dari <a href='tg://openmessage?user_id=777000'>Akun Telegram Resmi</a>. Kirim Kode OTP ke sini setelah membaca Format di bawah ini.\n"
+                "\nJika Kode OTP adalah 12345 Tolong [ TAMBAHKAN SPASI ] kirimkan Seperti ini 1 2 3 4 5.</b></blockquote>"
             ),
             timeout=300,
         )
