@@ -141,7 +141,7 @@ class BTN:
     
     # START -> diganti ke ReplyKeyboardMarkup
     def START(message):
-        if message.from_user.id = OWNER_ID:
+        if message.from_user.id == OWNER_ID:
             # MENU UNTUK USER
             button = [
                 [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫")],
@@ -358,4 +358,3 @@ async def notes_create_button(text):
     buttons.add(*keyboard)
     text_button = split_text[0]
     return buttons, text_button
-
