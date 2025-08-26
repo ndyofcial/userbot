@@ -61,15 +61,14 @@ async def _(client, callback_query):
             reply_markup=InlineKeyboardMarkup(buttons),
         )
     else:
-    buttons = [[InlineKeyboardButton("⦪ ʟᴀɴᴊᴜᴛᴋᴀɴ ⦫", callback_data="add_ubot")]]
-    return await callback_query.edit_message_text(
-        """
-<blockquote><b>⌭ ᴀɴᴅᴀ ᴛᴇʟᴀʜ ᴍᴇᴍʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ  
-ꜱɪʟᴀʜᴋᴀɴ ᴘᴇɴᴄᴇᴛ ᴛᴏᴍʙᴏʟ ʟᴀɴᴊᴜᴛᴋᴀɴ ᴜɴᴛᴜᴋ ᴍᴇᴍʙᴜᴀᴛ ᴜꜱᴇʀʙᴏᴛ</b></blockquote>
+        buttons = [[InlineKeyboardButton("⦪ ʟᴀɴᴊᴜᴛᴋᴀɴ ⦫", callback_data="add_ubot")]]
+        return await callback_query.edit_message_text(
+            """
+<blockquote><b>⌭ ᴀɴᴅᴀ ᴛᴇʟᴀʜ ᴍᴇᴍʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ꜱɪʟᴀʜᴋᴀɴ ᴘᴇɴᴄᴇᴛ ᴛᴏᴍʙᴏʟ ʟᴀɴᴊᴜᴛᴋᴀɴ ᴜɴᴛᴜᴋ ᴍᴇᴍʙᴜᴀᴛ ᴜꜱᴇʀʙᴏᴛ</b></blockquote>
 """,
-        disable_web_page_preview=True,
-        reply_markup=InlineKeyboardMarkup(buttons),
-    )
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
 
 
 @PY.CALLBACK("status")
