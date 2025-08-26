@@ -100,12 +100,15 @@ async def _(client, message):
     cmd, value = parse_autobc_args(message)
 
     if cmd == "on":
-        if AG.get(client.me.id, {}).get("status"):
+        db_status = await get_vars(client.me.id, "AUTOBCAST")
+        if AG.get(client.me.id, {}).get("status") or db_status == "on":
             return await msg.edit("<b><i>⚡ Auto Broadcast sudah aktif.</i></b>")
+
         if not await get_vars(client.me.id, "DELAY_GCAST"):
             await set_vars(client.me.id, "DELAY_GCAST", "60")
         if not await get_vars(client.me.id, "PER_GROUP_DELAY"):
             await set_vars(client.me.id, "PER_GROUP_DELAY", "3")
+
         await set_vars(client.me.id, "AUTOBCAST", "on")
         await msg.edit("<b><i>⚡ Auto Broadcast diaktifkan.</i></b>")
         asyncio.create_task(run_autobc(client))
