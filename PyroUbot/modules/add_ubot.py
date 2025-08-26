@@ -14,9 +14,12 @@ from PyroUbot import *
 @PY.START
 @PY.PRIVATE
 async def _(client, message):
-    buttons = BTN.START(message)
-    msg = MSG.START(message)
-    await message.reply_video("https://files.catbox.moe/axrb4w.mp4", caption=msg, reply_markup=InlineKeyboardMarkup(buttons))
+    buttons = START_KEYBOARD(message.from_user.id)
+await message.reply_video(
+    "https://files.catbox.moe/axrb4w.mp4",
+    caption=msg,
+    reply_markup=buttons
+)
 
 
 @PY.CALLBACK("bahan")
