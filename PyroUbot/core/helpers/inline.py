@@ -76,6 +76,11 @@ def create_inline_keyboard(text, user_id=False, is_back=False):
     return markup, text_matches
 
 
+from pyrogram.types import InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+
+OWNER_ID = 123456789  # ganti dengan ID owner kamu
+
+
 class BTN:
     def ALIVE(get_id):
         button = [
@@ -102,6 +107,7 @@ class BTN:
             [InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇ", callback_data="update")],
         ]
         return button
+
         
     def ADD_EXP(user_id):
         buttons = InlineKeyboard(row_width=3)
@@ -133,39 +139,41 @@ class BTN:
         return button
 
     
+    # START -> diganti ke ReplyKeyboardMarkup
     def START(message):
         if not message.from_user.id == OWNER_ID:
             button = [
-                [InlineKeyboardButton("⦪ ᴛʀɪᴀʟ ⦫", callback_data="trial")],
+                [KeyboardButton("⦪ ᴛʀɪᴀʟ ⦫")],
                 [
-                    InlineKeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫", callback_data="bahan"),
-                    InlineKeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫", callback_data="resetprefix")
+                    KeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫"),
+                    KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")
                 ],
                 [
-                    InlineKeyboardButton("⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼", url="t.me/moire_marketx"), 
-                    InlineKeyboardButton("⳹ ᴏᴡɴᴇʀ ⳼", url="t.me/moire_mor")
+                    KeyboardButton("⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼"),
+                    KeyboardButton("⳹ ᴏᴡɴᴇʀ ⳼")
                 ],
                 [
-                    InlineKeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼", callback_data="buat_ubot"),
-                    InlineKeyboardButton("⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫", callback_data="help_back")
+                    KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼"),
+                    KeyboardButton("⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫")
                 ],
-                [InlineKeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫", callback_data="support")]
+                [KeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫")]
             ]
         else:
             button = [
                 [
-                    InlineKeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫", callback_data="bahan"),
-                    InlineKeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫", callback_data="resetprefix")
+                    KeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫"),
+                    KeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫")
                 ],
                 [
-                    InlineKeyboardButton("⦪ ɢɪᴛᴘᴜʟʟ ⦫", callback_data="cb_gitpull"),
-                    InlineKeyboardButton("⦪ ʀᴇsᴛᴀʀᴛ ⦫", callback_data="cb_restart")
+                    KeyboardButton("⦪ ɢɪᴛᴘᴜʟʟ ⦫"),
+                    KeyboardButton("⦪ ʀᴇsᴛᴀʀᴛ ⦫")
                 ],
                 [
-                    InlineKeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫", callback_data="cek_ubot")
+                    KeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫")
                 ]
             ]
-        return button
+
+        return ReplyKeyboardMarkup(button, resize_keyboard=True)
 
     def PLUS_MINUS(query, user_id):
         button = [
