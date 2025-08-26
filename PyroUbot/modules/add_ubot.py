@@ -9,18 +9,6 @@ from pyrogram.raw import functions
 
 from PyroUbot import *
 
-
-import asyncio
-import importlib
-from datetime import datetime
-
-from pyrogram.enums import SentCodeType
-from pyrogram.errors import *
-from pyrogram.types import *
-from pyrogram.raw import functions
-
-from PyroUbot import *
-
 # =================== START HANDLER =================== #
 @PY.BOT("start")
 @PY.START
