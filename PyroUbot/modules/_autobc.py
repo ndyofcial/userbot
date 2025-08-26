@@ -5,16 +5,8 @@ from pyrogram.enums import ChatType
 from pyrogram.errors import FloodWait
 from PyroUbot import *
 
-# ======================
-# Global Variables
-# ======================
 AG = {}  # per userbot id: {"status": bool, "round": int, "last": datetime, "next": datetime}
 
-BLACKLIST_CHAT = []  # Jika ada chat tertentu yang ingin di-skip
-
-# ======================
-# Helpers
-# ======================
 def now_wib():
     return datetime.utcnow() + timedelta(hours=7)  # UTC+7
 
@@ -33,7 +25,7 @@ def parse_autobc_args(message):
     return (cmd, val)
 
 # ======================
-# Core AutoBC Loop
+# Core AutoBC
 # ======================
 async def run_autobc(client):
     AG[client.me.id] = {
@@ -51,7 +43,7 @@ async def run_autobc(client):
         auto_texts = await get_auto_text(client.me.id)
 
         if not auto_texts:
-            await client.send_message(client.me.id, "<b><i>💤 Tidak ada pesan yang disimpan. Matikan AutoBC dulu atau simpan pesan baru.</i></b>")
+            await client.send_message(client.me.id, "<b><i>💤 Tidak ada pesan yang disimpan.</i></b>")
             AG[client.me.id]["status"] = False
             await set_vars(client.me.id, "AUTOBCAST", "off")
             return
@@ -100,21 +92,14 @@ async def run_autobc(client):
         await asyncio.sleep(60 * delay_minutes)
 
 # ======================
-# Command Handler
+# Commands
 # ======================
 @PY.UBOT("autobc")
 async def _(client, message):
     msg = await message.reply("<b><i>Format salah! Gunakan .autobc [query] - [value]</i></b>")
     cmd, value = parse_autobc_args(message)
 
-    # ---------- ON ----------
     if cmd == "on":
-        auto_texts = await get_auto_text(client.me.id)
-        if not auto_texts:
-            return await msg.edit(
-                "<b><i>⚠️ Tidak ada pesan tersimpan! Gunakan <code>.autobc save</code> dulu sebelum mengaktifkan AutoBC.</i></b>"
-            )
-
         if AG.get(client.me.id, {}).get("status"):
             return await msg.edit("<b><i>⚡ Auto Broadcast sudah aktif.</i></b>")
         if not await get_vars(client.me.id, "DELAY_GCAST"):
@@ -125,15 +110,16 @@ async def _(client, message):
         await msg.edit("<b><i>⚡ Auto Broadcast diaktifkan.</i></b>")
         asyncio.create_task(run_autobc(client))
 
-    # ---------- OFF ----------
     elif cmd == "off":
         AG[client.me.id] = {"status": False, "round": AG.get(client.me.id, {}).get("round", 0)}
         await set_vars(client.me.id, "AUTOBCAST", "off")
         return await msg.edit("<b><i>⛔ Auto Broadcast dihentikan.</i></b>")
 
-    # ---------- STATUS ----------
     elif cmd == "status":
-        status = "✅ Enabled" if AG.get(client.me.id, {}).get("status") else "⛔ Disabled"
+        db_status = await get_vars(client.me.id, "AUTOBCAST")
+        is_running = AG.get(client.me.id, {}).get("status") or db_status == "on"
+        status = "✅ Enabled" if is_running else "⛔ Disabled"
+
         delay_minutes = int(await get_vars(client.me.id, "DELAY_GCAST") or 60)
         per_group_delay = int(await get_vars(client.me.id, "PER_GROUP_DELAY") or 3)
         auto_texts = await get_auto_text(client.me.id)
@@ -145,9 +131,9 @@ async def _(client, message):
 <details><summary><b>📎 Auto Broadcast Status</b></summary>
 
 👤 Status: {status}  
-🏓 Pause Rotation: {delay_minutes} Menit  
-✉️ Pesan Tersimpan: {len(auto_texts) if auto_texts else 0}  
-⚙️ Total Rounds: {total_round}  
+🏓 Pause Rotation: {delay_minutes} Min  
+✉️ Save Messages: {len(auto_texts) if auto_texts else 0}  
+⚙️ Total Rounds: {total_round} Times  
 ⏰ Last Broadcast: {last_bc}  
 ⚡️ Next Broadcast: {next_bc}  
 
@@ -155,14 +141,12 @@ async def _(client, message):
 """
         return await msg.edit(teks, disable_web_page_preview=True)
 
-    # ---------- DELAY ----------
     elif cmd == "delay":
         if not value.isdigit():
             return await msg.edit("<b><i>⛔ Format salah! Gunakan <code>.autobc delay [menit]</code></i></b>")
         await set_vars(client.me.id, "DELAY_GCAST", value)
         return await msg.edit(f"<b><i>😐 Delay antar putaran diatur ke {value} menit.</i></b>")
 
-    # ---------- PER GROUP DELAY ----------
     elif cmd == "perdelay":
         if not value.isdigit():
             return await msg.edit("<b><i>⛔ Format salah! Gunakan <code>.autobc perdelay [detik]</code></i></b>")
@@ -172,7 +156,6 @@ async def _(client, message):
         await set_vars(client.me.id, "PER_GROUP_DELAY", str(val))
         return await msg.edit(f"<b><i>😐 Delay per grup diatur ke {val} detik.</i></b>")
 
-    # ---------- SAVE ----------
     elif cmd == "save":
         if not message.reply_to_message:
             return await msg.edit("<b><i>⛔ Harap reply ke pesan yang ingin disimpan.</i></b>")
@@ -189,7 +172,6 @@ async def _(client, message):
             f"<b><i>⚠️ Pesan lama otomatis dihapus.</i></b>"
         )
 
-    # ---------- LIST ----------
     elif cmd == "list":
         auto_texts = await get_auto_text(client.me.id)
         if not auto_texts:
@@ -197,7 +179,6 @@ async def _(client, message):
         teks = f"📌 ID Pesan Aktif: <code>{auto_texts[0]}</code>"
         return await msg.edit(f"<b><i>⚡️ Pesan AutoBC Saat Ini:</i></b>\n\n{teks}")
 
-    # ---------- REMOVE ----------
     elif cmd == "remove":
         auto_texts = await get_auto_text(client.me.id)
         if not auto_texts:
@@ -206,12 +187,11 @@ async def _(client, message):
         await remove_auto_text(client.me.id, 0)
         return await msg.edit(f"<b><i>⚙️ Pesan dengan ID <code>{removed}</code> berhasil dihapus.</i></b>")
 
-    # ---------- HELP ----------
     else:
         return await msg.edit(f"<b><i>⚠️ Format salah! Gunakan .autobc [query] - [value]</i></b>")
 
 # ======================
-# Resume AutoBC on Start
+# Auto Resume on start
 # ======================
 async def resume_autobc(client):
     status = await get_vars(client.me.id, "AUTOBCAST")
@@ -238,9 +218,6 @@ async def resume_autobc(client):
         )
         asyncio.create_task(run_autobc(client))
 
-# ======================
-# Start Command
-# ======================
 @PY.UBOT("start")
 async def start_handler(client, message):
     await resume_autobc(client)
