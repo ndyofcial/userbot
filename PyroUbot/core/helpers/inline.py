@@ -1,11 +1,16 @@
+import re
 from pykeyboard import InlineKeyboard
 from pyrogram.errors import MessageNotModified
-from pyrogram.types import *
+from pyrogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    ReplyKeyboardMarkup,
+    InlineQueryResultArticle,
+    InputTextMessageContent,
+)
 from pyromod.helpers import ikb
-from pyrogram.types import (InlineKeyboardButton, InlineQueryResultArticle,
-                            InputTextMessageContent)
 
-from PyroUbot import *
+from PyroUbot import OWNER_ID, bot, ubot
 
 
 def detect_url_links(text):
@@ -77,32 +82,28 @@ def create_inline_keyboard(text, user_id=False, is_back=False):
 
 
 class BTN:
+    @staticmethod
     def ALIVE(get_id):
-        button = [
+        return [
             [
                 InlineKeyboardButton(
                     text="ᴛᴜᴛᴜᴘ",
                     callback_data=f"alv_cls {int(get_id[1])} {int(get_id[2])}",
                 )
             ],
-            [
-                InlineKeyboardButton(
-                    text="ʜᴇʟᴘ",
-                    callback_data="help_back",
-                )
-            ]
+            [InlineKeyboardButton("ʜᴇʟᴘ", callback_data="help_back")],
         ]
-        return button
 
+    @staticmethod
     def BOT_HELP(message):
-        button = [
+        return [
             [InlineKeyboardButton("ʀᴇsᴛᴀʀᴛ", callback_data="reboot")],
             [InlineKeyboardButton("ꜱʏꜱᴛᴇᴍ", callback_data="system")],
             [InlineKeyboardButton("ᴜʙᴏᴛ", callback_data="ubot")],
             [InlineKeyboardButton("ᴜᴘᴅᴀᴛᴇ", callback_data="update")],
         ]
-        return button
-        
+
+    @staticmethod
     def ADD_EXP(user_id):
         buttons = InlineKeyboard(row_width=3)
         keyboard = []
@@ -115,9 +116,7 @@ class BTN:
             )
         buttons.add(*keyboard)
         buttons.row(
-            InlineKeyboardButton(
-                "⦪ ᴅᴀᴘᴀᴛᴋᴀɴ ᴘʀᴏfɪʟ ⦫", callback_data=f"profil {user_id}"
-            )
+            InlineKeyboardButton("⦪ ᴅᴀᴘᴀᴛᴋᴀɴ ᴘʀᴏfɪʟ ⦫", callback_data=f"profil {user_id}")
         )
         buttons.row(
             InlineKeyboardButton(
@@ -126,153 +125,112 @@ class BTN:
         )
         return buttons
 
+    @staticmethod
     def EXP_UBOT():
-        button = [
-            [InlineKeyboardButton("beli userbot", callback_data="bahan")],
-        ]
-        return button
+        return [[InlineKeyboardButton("beli userbot", callback_data="bahan")]]
 
-    
-    def START(message):
-        if not message.from_user.id == OWNER_ID:
-            button = [
-                [InlineKeyboardButton("⦪ ᴛʀɪᴀʟ ⦫", callback_data="trial")],
-                [
-                    InlineKeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫", callback_data="bahan"),
-                    InlineKeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫", callback_data="resetprefix")
-                ],
-                [
-                    InlineKeyboardButton("⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼", url="t.me/moire_marketx"), 
-                    InlineKeyboardButton("⳹ ᴏᴡɴᴇʀ ⳼", url="t.me/moire_mor")
-                ],
-                [
-                    InlineKeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼", callback_data="buat_ubot"),
-                    InlineKeyboardButton("⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫", callback_data="help_back")
-                ],
-                [InlineKeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫", callback_data="support")]
-            ]
-        else:
-            button = [
-                [
-                    InlineKeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫", callback_data="bahan"),
-                    InlineKeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫", callback_data="resetprefix")
-                ],
-                [
-                    InlineKeyboardButton("⦪ ɢɪᴛᴘᴜʟʟ ⦫", callback_data="cb_gitpull"),
-                    InlineKeyboardButton("⦪ ʀᴇsᴛᴀʀᴛ ⦫", callback_data="cb_restart")
-                ],
-                [
-                    InlineKeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫", callback_data="cek_ubot")
+    @staticmethod
+    def START(message, use_reply: bool = False):
+        """
+        START button generator
+        - InlineKeyboardMarkup (default)
+        - ReplyKeyboardMarkup (kalau use_reply=True)
+        """
+        if not use_reply:
+            # Inline mode
+            if not message.from_user.id == OWNER_ID:
+                button = [
+                    [InlineKeyboardButton("⦪ ᴛʀɪᴀʟ ⦫", callback_data="trial")],
+                    [
+                        InlineKeyboardButton("⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫", callback_data="bahan"),
+                        InlineKeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫", callback_data="resetprefix"),
+                    ],
+                    [
+                        InlineKeyboardButton("⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼", url="t.me/moire_marketx"),
+                        InlineKeyboardButton("⳹ ᴏᴡɴᴇʀ ⳼", url="t.me/moire_mor"),
+                    ],
+                    [
+                        InlineKeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼", callback_data="buat_ubot"),
+                        InlineKeyboardButton("⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫", callback_data="help_back"),
+                    ],
+                    [InlineKeyboardButton("⦪ sᴜᴘᴘᴏʀᴛ ⦫", callback_data="support")],
                 ]
+            else:
+                button = [
+                    [
+                        InlineKeyboardButton("⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫", callback_data="bahan"),
+                        InlineKeyboardButton("⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫", callback_data="resetprefix"),
+                    ],
+                    [
+                        InlineKeyboardButton("⦪ ɢɪᴛᴘᴜʟʟ ⦫", callback_data="cb_gitpull"),
+                        InlineKeyboardButton("⦪ ʀᴇsᴛᴀʀᴛ ⦫", callback_data="cb_restart"),
+                    ],
+                    [InlineKeyboardButton("⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫", callback_data="cek_ubot")],
+                ]
+            return InlineKeyboardMarkup(button)
+        else:
+            # Reply mode
+            if not message.from_user.id == OWNER_ID:
+                button = [
+                    ["⦪ ᴛʀɪᴀʟ ⦫"],
+                    ["⦪ ʙᴇʟɪ ᴜꜱᴇʀʙᴏᴛ ⦫", "⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫"],
+                    ["⳹ ʀᴇᴘᴏ ᴜsᴇʀʙᴏᴛ ⳼", "⳹ ᴏᴡɴᴇʀ ⳼"],
+                    ["⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⳼", "⦪ ʜᴇʟᴘ ᴍᴇɴᴜ ⦫"],
+                    ["⦪ sᴜᴘᴘᴏʀᴛ ⦫"],
+                ]
+            else:
+                button = [
+                    ["⦪ ʙᴜᴀᴛ ᴜsᴇʀʙᴏᴛ ⦫", "⦪ ʀᴇsᴇᴛ ᴘʀᴇғɪx ⦫"],
+                    ["⦪ ɢɪᴛᴘᴜʟʟ ⦫", "⦪ ʀᴇsᴛᴀʀᴛ ⦫"],
+                    ["⦪ ʟɪsᴛ ᴜsᴇʀʙᴏᴛ ⦫"],
+                ]
+            return ReplyKeyboardMarkup(button, resize_keyboard=True)
+
+    @staticmethod
+    def PLUS_MINUS(query, user_id):
+        return [
+            [
+                InlineKeyboardButton("-1", callback_data=f"kurang {query}"),
+                InlineKeyboardButton("+1", callback_data=f"tambah {query}"),
+            ],
+            [InlineKeyboardButton("⦪ ᴋᴏɴꜰɪʀᴍᴀsɪ ⦫", callback_data="confirm")],
+            [InlineKeyboardButton("⦪ ʙᴀᴛᴀʟᴋᴀɴ ⦫", callback_data=f"home {user_id}")],
+        ]
+
+    @staticmethod
+    def UBOT(user_id, count):
+        return [
+            [
+                InlineKeyboardButton(
+                    "⦪ ʜᴀᴘᴜs ᴅᴀʀɪ ᴅᴀᴛᴀʙᴀsᴇ ⦫", callback_data=f"del_ubot {int(user_id)}"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "⦪ ᴄᴇᴋ ᴍᴀsᴀ ᴀᴋᴛɪғ ⦫",
+                    callback_data=f"cek_masa_aktif {int(user_id)}",
+                )
+            ],
+            [
+                InlineKeyboardButton("⟢", callback_data=f"p_ub {int(count)}"),
+                InlineKeyboardButton("⟣", callback_data=f"n_ub {int(count)}"),
+            ],
+        ]
+
+    @staticmethod
+    def DEAK(user_id, count):
+        return [
+            [
+                InlineKeyboardButton("⦪ ᴋᴇᴍʙᴀʟɪ ⦫", callback_data=f"p_ub {int(count)}"),
+                InlineKeyboardButton(
+                    "⦪ sᴇᴛᴜᴊᴜɪ ⦫", callback_data=f"deak_akun {int(count)}"
+                ),
             ]
-        return button
+        ]
 
-    def PLUS_MINUS(query, user_id):
-        button = [
-            [
-                InlineKeyboardButton(
-                    "-1",
-                    callback_data=f"kurang {query}",
-                ),
-                InlineKeyboardButton(
-                    "+1",
-                    callback_data=f"tambah {query}",
-                ),
-            ],
-            [InlineKeyboardButton("⦪ ᴋᴏɴꜰɪʀᴍᴀsɪ ⦫", callback_data="confirm")],
-            [InlineKeyboardButton("⦪ ʙᴀᴛᴀʟᴋᴀɴ ⦫", callback_data=f"home {user_id}")],
-        ]
-        return button
-
-    
-    def UBOT(user_id, count):
-        button = [
-            [
-                InlineKeyboardButton(
-                    "⦪ ʜᴀᴘᴜs ᴅᴀʀɪ ᴅᴀᴛᴀʙᴀsᴇ ⦫",
-                    callback_data=f"del_ubot {int(user_id)}",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "⦪ ᴄᴇᴋ ᴍᴀsᴀ ᴀᴋᴛɪғ ⦫",
-                    callback_data=f"cek_masa_aktif {int(user_id)}",
-                )
-            ],
-            [
-                InlineKeyboardButton("⟢", callback_data=f"p_ub {int(count)}"),
-                InlineKeyboardButton("⟣", callback_data=f"n_ub {int(count)}"),
-            ],
-        ]
-        return button
-
-    def DEAK(user_id, count):
-        button = [
-            [
-                InlineKeyboardButton(
-                    "⦪ ᴋᴇᴍʙᴀʟɪ ⦫",
-                    callback_data=f"p_ub {int(count)}"
-                ),
-                InlineKeyboardButton(
-                    "⦪ sᴇᴛᴜᴊᴜɪ ⦫", callback_data=f"deak_akun {int(count)}",
-                ),
-            ],
-        ]
-        return button
-    def PLUS_MINUS(query, user_id):
-        button = [
-            [
-                InlineKeyboardButton(
-                    "-1",
-                    callback_data=f"kurang {query}",
-                ),
-                InlineKeyboardButton(
-                    "+1",
-                    callback_data=f"tambah {query}",
-                ),
-            ],
-            [InlineKeyboardButton("⦪ ᴋᴏɴꜰɪʀᴍᴀsɪ ⦫", callback_data="confirm")],
-            [InlineKeyboardButton("⦪ ʙᴀᴛᴀʟᴋᴀɴ ⦫", callback_data=f"home {user_id}")],
-        ]
-        return button
-
-    
-    def UBOT(user_id, count):
-        button = [
-            [
-                InlineKeyboardButton(
-                    "⦪ ʜᴀᴘᴜs ᴅᴀʀɪ ᴅᴀᴛᴀʙᴀsᴇ ⦫",
-                    callback_data=f"del_ubot {int(user_id)}",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "⦪ ᴄᴇᴋ ᴍᴀsᴀ ᴀᴋᴛɪғ ⦫",
-                    callback_data=f"cek_masa_aktif {int(user_id)}",
-                )
-            ],
-            [
-                InlineKeyboardButton("⟢", callback_data=f"p_ub {int(count)}"),
-                InlineKeyboardButton("⟣", callback_data=f"n_ub {int(count)}"),
-            ],
-        ]
-        return button
-
-    def DEAK(user_id, count):
-        button = [
-            [
-                InlineKeyboardButton(
-                    "⦪ ᴋᴇᴍʙᴀʟɪ ⦫",
-                    callback_data=f"p_ub {int(count)}"
-                ),
-                InlineKeyboardButton(
-                    "⦪ sᴇᴛᴜᴊᴜɪ ⦫", callback_data=f"deak_akun {int(count)}",
-                ),
-            ],
-        ]
-        return button
 
 class INLINE:
+    @staticmethod
     def QUERY(func):
         async def wrapper(client, inline_query):
             users = ubot._get_my_id
@@ -281,11 +239,11 @@ class INLINE:
                     inline_query.id,
                     cache_time=1,
                     results=[
-                        (
-                            InlineQueryResultArticle(
-                                title=f"ᴀɴᴅᴀ ʙᴇʟᴜᴍ ᴏʀᴅᴇʀ @{bot.me.username}",
-                                input_message_content=InputTextMessageContent(f"sɪʟᴀʜᴋᴀɴ ᴏʀᴅᴇʀ ᴅɪ @{bot.me.username} ᴅᴜʟᴜ ʙɪᴀʀ ʙɪsᴀ ᴍᴇɴɢɢᴜɴᴀᴋᴀɴ ɪɴʟɪɴᴇ ɪɴɪ"),
-                            )
+                        InlineQueryResultArticle(
+                            title=f"ᴀɴᴅᴀ ʙᴇʟᴜᴍ ᴏʀᴅᴇʀ @{bot.me.username}",
+                            input_message_content=InputTextMessageContent(
+                                f"sɪʟᴀʜᴋᴀɴ ᴏʀᴅᴇʀ ᴅɪ @{bot.me.username} ᴅᴜʟᴜ ʙɪᴀʀ ʙɪsᴀ ᴍᴇɴɢɢᴜɴᴀᴋᴀɴ ɪɴʟɪɴᴇ ɪɴɪ"
+                            ),
                         )
                     ],
                 )
@@ -294,6 +252,7 @@ class INLINE:
 
         return wrapper
 
+    @staticmethod
     def DATA(func):
         async def wrapper(client, callback_query):
             users = ubot._get_my_id
@@ -309,6 +268,7 @@ class INLINE:
                     await callback_query.answer("❌ ERROR")
 
         return wrapper
+
 
 async def create_button(m):
     buttons = InlineKeyboard(row_width=1)
@@ -350,4 +310,3 @@ async def notes_create_button(text):
     buttons.add(*keyboard)
     text_button = split_text[0]
     return buttons, text_button
-
