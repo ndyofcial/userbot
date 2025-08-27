@@ -79,7 +79,7 @@ async def run_autobc(client):
         await client.send_message(
             client.me.id,
             f"""
-<b>⚡️ AutoBC Putaran Selesai</b>
+<b>⚡️ AutoBC Done</b>
 ✅ Berhasil : {group_success} Chat
 ❌ Gagal : {failed} Chat
 ⏳ Putaran Ke : {total_round}
@@ -200,23 +200,41 @@ async def resume_autobc(client):
         per_group_delay = int(await get_vars(client.me.id, "PER_GROUP_DELAY") or 3)
         round_no = AG.get(client.me.id, {}).get("round", 0) + 1
 
-        next_run = now_wib() + timedelta(minutes=delay_minutes)
+        # ambil data last & next dari memory
+        last_bc = AG.get(client.me.id, {}).get("last")
+        next_bc = AG.get(client.me.id, {}).get("next")
+
+        # kalau tidak ada next, hitung baru
+        if not next_bc:
+            next_bc = now_wib() + timedelta(minutes=delay_minutes)
+
         AG[client.me.id] = {
             "status": True,
             "round": round_no,
-            "last": None,
-            "next": next_run,
+            "last": last_bc,
+            "next": next_bc,
         }
 
-        await client.send_message(
-            client.me.id,
-            f"""📣 AutoBC #{round_no} (Resume)
+        # cek apakah waktu next sudah lewat
+        wait_time = (next_bc - now_wib()).total_seconds()
+        if wait_time <= 0:
+            # langsung jalanin AutoBC
+            await client.send_message(client.me.id, f"⚡ Resume AutoBC langsung jalan (next sudah lewat).")
+            asyncio.create_task(run_autobc(client))
+        else:
+            await client.send_message(
+                client.me.id,
+                f"""📣 AutoBC #{round_no} (Resume)
 🕒 Delay antar putaran: {delay_minutes} menit
 ⏱️ Delay per grup: {per_group_delay} detik
-📆 Next AutoBC : <b>{fmt_wib(next_run)}</b>
+📆 Next AutoBC : <b>{fmt_wib(next_bc)}</b>
 """
-        )
-        asyncio.create_task(run_autobc(client))
+            )
+            # tunggu sampai waktunya, lalu mulai
+            async def delayed_start():
+                await asyncio.sleep(wait_time)
+                asyncio.create_task(run_autobc(client))
+            asyncio.create_task(delayed_start())
 
 # Auto jalan pas modul diload
 async def __load__(client):
