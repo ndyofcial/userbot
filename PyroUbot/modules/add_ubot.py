@@ -14,13 +14,10 @@ from PyroUbot import *
 @PY.START
 @PY.PRIVATE
 async def _(client, message):
-    buttons = BTN.START(message)   # ini udah ReplyKeyboardMarkup
+    buttons = BTN.START(message)
     msg = MSG.START(message)
-    await message.reply_video(
-        "https://files.catbox.moe/axrb4w.mp4",
-        caption=msg,
-        reply_markup=buttons   # langsung pake, jangan bungkus InlineKeyboardMarkup
-    )
+    await message.reply_video("https://files.catbox.moe/axrb4w.mp4", caption=msg, reply_markup=InlineKeyboardMarkup(buttons))
+
 
 @PY.CALLBACK("bahan")
 async def _(client, callback_query):
