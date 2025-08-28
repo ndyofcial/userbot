@@ -56,7 +56,7 @@ async def _(client, message):
         if "tidak dibatasi" in teks_spambot or "not restricted" in teks_spambot or "free" in teks_spambot:
             text = f"""
 <b>⌭ {pong} Status Akun : ✅ Tidak Dibatasi</b>
-✅ Kabar baik, akun anda tidak dibatasi.
+Kabar baik, akun anda tidak dibatasi.
 Anda bebas, sebebas burung yang lepas.
 
 <b> ~ ⭐{client.me.mention}</b>
